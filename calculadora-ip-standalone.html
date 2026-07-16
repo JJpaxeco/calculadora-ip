@@ -1,0 +1,1760 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Calculadora completa de IPv4, IPv6, subnetting, VLSM e conversões.">
+  <title>Calculadora IPv4 & IPv6</title>
+  <style>
+:root {
+  color-scheme: dark;
+  --bg: #06101d;
+  --bg-soft: #0a1728;
+  --panel: rgba(13, 27, 45, .88);
+  --panel-solid: #0d1b2d;
+  --panel-2: #11243a;
+  --panel-3: #162c45;
+  --text: #edf5ff;
+  --muted: #9db0c8;
+  --line: rgba(157, 176, 200, .19);
+  --line-strong: rgba(91, 192, 255, .42);
+  --accent: #5bc0ff;
+  --accent-strong: #2196f3;
+  --accent-2: #63e6be;
+  --danger: #ff8490;
+  --warning: #ffd166;
+  --shadow: 0 22px 65px rgba(0, 0, 0, .32);
+  --shadow-soft: 0 10px 32px rgba(0, 0, 0, .18);
+  --radius-xl: 28px;
+  --radius: 20px;
+  --radius-sm: 13px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eef4fa;
+  --bg-soft: #e4edf7;
+  --panel: rgba(255, 255, 255, .90);
+  --panel-solid: #ffffff;
+  --panel-2: #f5f8fc;
+  --panel-3: #eaf1f8;
+  --text: #102239;
+  --muted: #5c7088;
+  --line: rgba(50, 81, 114, .17);
+  --line-strong: rgba(0, 111, 190, .36);
+  --accent: #0a83d5;
+  --accent-strong: #006fbe;
+  --accent-2: #0b8f68;
+  --danger: #c92a2a;
+  --warning: #8d6200;
+  --shadow: 0 22px 60px rgba(41, 72, 105, .13);
+  --shadow-soft: 0 10px 28px rgba(41, 72, 105, .09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 8% -4%, color-mix(in srgb, var(--accent) 17%, transparent), transparent 30rem),
+    radial-gradient(circle at 94% 12%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 32rem),
+    linear-gradient(180deg, var(--bg-soft), var(--bg) 32rem);
+  font: 15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; touch-action: manipulation; }
+
+.app-shell {
+  width: min(100%, 1560px);
+  margin: 0 auto;
+  padding: clamp(12px, 2vw, 28px);
+  padding-left: max(clamp(12px, 2vw, 28px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px, 2vw, 28px), env(safe-area-inset-right));
+}
+
+
+.public-ip-panel {
+  position: relative;
+  margin-bottom: 14px;
+  padding: clamp(15px, 2vw, 21px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-2) 9%, transparent), color-mix(in srgb, var(--accent) 8%, transparent)),
+    var(--panel);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.public-ip-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+.public-ip-heading h2 { margin: 1px 0 0; font-size: clamp(18px, 2.2vw, 24px); line-height: 1.15; letter-spacing: -.025em; }
+.eyebrow { display: block; color: var(--accent-2); font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.public-ip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.public-ip-card {
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel-2) 86%, transparent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .035);
+}
+.public-ip-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.ip-version { color: var(--muted); font-size: 12px; font-weight: 850; letter-spacing: .035em; text-transform: uppercase; }
+.ip-status { flex: 0 0 auto; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: .035em; text-transform: uppercase; }
+.ip-status.loading { color: var(--warning); background: color-mix(in srgb, var(--warning) 9%, transparent); }
+.ip-status.ok { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 35%, var(--line)); background: color-mix(in srgb, var(--accent-2) 9%, transparent); }
+.ip-status.unavailable { color: var(--muted); background: color-mix(in srgb, var(--muted) 7%, transparent); }
+.ip-status.noipv6 { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 34%, var(--line)); background: color-mix(in srgb, var(--warning) 8%, transparent); }
+.ip-status.error { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 32%, var(--line)); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+.public-ip-value-row { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.ip-value { display: block; flex: 1 1 auto; min-width: 0; min-height: 28px; overflow-wrap: anywhere; color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: clamp(16px, 2vw, 21px); line-height: 1.3; }
+.public-ip-copy { flex: 0 0 auto; }
+.ip-detail { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+.public-ip-note { margin: 11px 2px 0; color: var(--muted); font-size: 11px; }
+.public-ip-note a { color: var(--accent); font-weight: 800; text-underline-offset: 2px; }
+.ip-refresh-button {
+  flex: 0 0 auto;
+  min-height: 39px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: var(--shadow-soft);
+  font-weight: 820;
+  transition: transform .16s ease, border-color .16s ease, opacity .16s ease;
+}
+.ip-refresh-button:hover { transform: translateY(-1px); border-color: var(--line-strong); }
+.ip-refresh-button:disabled { cursor: progress; opacity: .62; transform: none; }
+.ip-refresh-button.is-loading span { display: inline-block; animation: ip-spin .8s linear infinite; }
+@keyframes ip-spin { to { transform: rotate(360deg); } }
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 22px;
+  overflow: hidden;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent-2) 6%, transparent)),
+    var(--panel);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 260px;
+  aspect-ratio: 1;
+  right: -90px;
+  top: -120px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  filter: blur(6px);
+}
+.hero h1 {
+  margin: 0 0 10px;
+  max-width: 900px;
+  font-size: clamp(29px, 4.2vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+}
+.hero p { max-width: 940px; margin: 0; color: var(--muted); font-size: clamp(14px, 1.6vw, 16px); }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.badge {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--panel-2) 87%, transparent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .04);
+  font-size: 12px;
+  font-weight: 720;
+}
+.icon-btn {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.icon-btn:hover { transform: translateY(-2px); border-color: var(--line-strong); background: var(--panel-3); }
+
+.tabs {
+  position: sticky;
+  z-index: 30;
+  top: max(8px, env(safe-area-inset-top));
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 18px 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--bg) 74%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1 0 auto;
+  min-width: 112px;
+  padding: 11px 17px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 800;
+  transition: color .18s ease, background .18s ease, transform .18s ease, border-color .18s ease;
+}
+.tab-btn:hover { color: var(--text); background: var(--panel-2); }
+.tab-btn.active {
+  color: #04131f;
+  border-color: color-mix(in srgb, var(--accent) 72%, white 8%);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, var(--accent-2)));
+  box-shadow: 0 7px 20px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: panel-in .22s ease both; }
+@keyframes panel-in { from { opacity: 0; transform: translateY(5px); } }
+
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(12px, 1.5vw, 18px); }
+.card {
+  position: relative;
+  min-width: 0;
+  grid-column: span 6;
+  padding: clamp(17px, 2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.card:hover { border-color: color-mix(in srgb, var(--line-strong) 65%, var(--line)); box-shadow: var(--shadow); }
+.card.full { grid-column: 1 / -1; }
+.card.third { grid-column: span 4; }
+.card h2, .card h3 { margin: 0 0 7px; line-height: 1.2; letter-spacing: -.02em; }
+.card > p.help { margin: 0 0 18px; color: var(--muted); }
+
+.form-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 13px; align-items: end; }
+.field { grid-column: span 6; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field.small { grid-column: span 3; }
+label { display: block; margin-bottom: 7px; font-weight: 780; }
+.field-hint { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+
+input, textarea, select {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: none;
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+input:hover, textarea:hover, select:hover { border-color: color-mix(in srgb, var(--line-strong) 65%, var(--line)); }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--panel-2) 92%, var(--accent) 8%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 17%, transparent);
+}
+input.is-synced { animation: synced .8s ease; }
+@keyframes synced {
+  0%, 100% { border-color: var(--line); }
+  35% { border-color: var(--accent-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 20%, transparent); }
+}
+textarea { min-height: 145px; resize: vertical; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.btn {
+  min-height: 45px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: 0 7px 18px rgba(0, 0, 0, .12);
+  font-weight: 830;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, border-color .16s ease;
+}
+.btn:hover { transform: translateY(-1px); border-color: var(--line-strong); filter: brightness(1.05); }
+.btn:active { transform: translateY(0) scale(.985); }
+.btn.primary { border-color: var(--accent); color: #04131f; background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, white 8%)); }
+.btn.secondary { border-color: var(--accent-2); color: #041812; background: linear-gradient(135deg, var(--accent-2), color-mix(in srgb, var(--accent-2) 72%, white 8%)); }
+.btn.ghost { color: var(--muted); background: transparent; box-shadow: none; }
+
+.result { margin-top: 18px; }
+.result:empty { display: none; }
+.alert, .notice { padding: 12px 14px; border-radius: 13px; }
+.alert { border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, var(--panel)); }
+.notice { margin-top: 12px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--panel)); }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 11px; }
+.kv { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); }
+.kv .k { color: var(--muted); font-size: 11px; font-weight: 840; letter-spacing: .055em; text-transform: uppercase; }
+.kv .v { margin-top: 5px; overflow-wrap: anywhere; font-weight: 800; }
+code, .mono { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
+.copyable { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0; }
+.copyable code { min-width: 0; white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
+.copy-mini {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--panel-3) 82%, transparent);
+  transition: transform .15s ease, border-color .15s ease, color .15s ease, background .15s ease;
+}
+.copy-mini:hover { transform: translateY(-1px); border-color: var(--line-strong); background: var(--panel-3); }
+.copy-mini:active { transform: scale(.94); }
+.copy-mini:disabled { cursor: not-allowed; opacity: .4; transform: none; }
+.copy-mini.copied { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 50%, var(--line)); }
+.copy-mini svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ipv6-dual { display: grid; gap: 9px; min-width: 0; }
+.ipv6-format-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; }
+.ipv6-format-label { color: var(--muted); font-size: 11px; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; }
+.table-wrap .ipv6-dual { min-width: 390px; }
+
+.table-wrap {
+  width: 100%;
+  margin-top: 15px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--panel-2) 72%, transparent);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+  -webkit-overflow-scrolling: touch;
+}
+.reference-table { max-height: min(68vh, 700px); }
+table { width: 100%; min-width: 760px; border-collapse: collapse; }
+.reference-table table { min-width: 540px; }
+th, td { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: nowrap; }
+th { position: sticky; z-index: 2; top: 0; color: var(--muted); background: var(--panel-solid); font-size: 11px; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; }
+tbody tr { transition: background .15s ease; }
+tbody tr:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+tr:last-child td { border-bottom: 0; }
+
+.progress { height: 10px; margin-top: 9px; overflow: hidden; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); }
+.progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.inline-check { display: flex; align-items: center; gap: 9px; margin-top: 12px; color: var(--muted); }
+.inline-check input { width: 19px; min-height: 19px; accent-color: var(--accent); }
+footer { padding: 30px 12px max(14px, env(safe-area-inset-bottom)); color: var(--muted); text-align: center; font-size: 13px; }
+.hidden { display: none !important; }
+
+
+
+/* Cabeçalho compacto e página de informações dos IPs públicos */
+[hidden] { display: none !important; }
+.hero {
+  align-items: center;
+  min-height: 102px;
+  padding: clamp(20px, 2.7vw, 32px);
+}
+.hero h1 { margin: 0; padding-right: 64px; }
+.public-ip-value-row { flex-wrap: wrap; }
+.public-ip-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.ip-info-button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--panel-3);
+  font-size: 12px;
+  font-weight: 820;
+  white-space: nowrap;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, opacity .16s ease;
+}
+.ip-info-button:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--line-strong); background: color-mix(in srgb, var(--accent) 12%, var(--panel-3)); }
+.ip-info-button:disabled { cursor: not-allowed; opacity: .42; }
+.ip-details-page { animation: details-in .2s ease-out; }
+@keyframes details-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.ip-details-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+.ip-details-back { width: auto; }
+.ip-details-card { grid-column: 1 / -1; }
+.ip-details-card h2 { margin: 5px 0 2px; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.ip-details-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.ip-details-group {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel-2) 82%, transparent);
+}
+.ip-details-group.full { grid-column: 1 / -1; }
+.ip-details-group h3 { margin: 0 0 11px; font-size: 15px; }
+.ip-details-list { display: grid; gap: 9px; }
+.ip-detail-row { display: grid; grid-template-columns: minmax(120px, .45fr) minmax(0, 1fr); gap: 12px; align-items: start; padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+.ip-detail-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.ip-detail-name { color: var(--muted); font-size: 12px; font-weight: 760; }
+.ip-detail-data { min-width: 0; overflow-wrap: anywhere; }
+.ip-detail-data code { white-space: normal; overflow-wrap: anywhere; }
+.ip-detail-link { color: var(--accent); font-weight: 760; text-underline-offset: 2px; }
+.ip-details-source { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 14px; color: var(--muted); font-size: 12px; }
+.ip-details-source a { color: var(--accent); font-weight: 800; }
+.ip-raw-details { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); }
+.ip-raw-details summary { padding: 11px 13px; cursor: pointer; color: var(--muted); font-weight: 800; }
+.ip-raw-details pre { max-height: 420px; margin: 0; padding: 0 13px 13px; overflow: auto; color: var(--text); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 980px) {
+  .card, .card.third { grid-column: 1 / -1; }
+  .hero { align-items: stretch; }
+  .icon-btn { position: absolute; top: 16px; right: 16px; }
+  .hero > div { padding-right: 54px; }
+}
+
+@media (max-width: 700px) {
+  .public-ip-value-row { align-items: flex-start; }
+  .public-ip-actions { width: 100%; justify-content: flex-end; }
+  .ip-details-groups { grid-template-columns: 1fr; }
+  .ip-details-group.full { grid-column: auto; }
+  .ip-details-toolbar { align-items: stretch; flex-direction: column; }
+  .ip-details-toolbar .btn, .ip-details-toolbar .ip-refresh-button { width: 100%; }
+  .ip-detail-row { grid-template-columns: 1fr; gap: 3px; }
+
+  .public-ip-grid { grid-template-columns: 1fr; }
+  .public-ip-heading { align-items: flex-start; }
+  body { font-size: 14px; }
+  .app-shell { padding-top: max(10px, env(safe-area-inset-top)); }
+  .hero { min-height: 0; border-radius: 21px; }
+  .hero h1 { font-size: clamp(28px, 9vw, 38px); }
+  .hero > div { padding-right: 42px; }
+  .icon-btn { width: 42px; height: 42px; top: 13px; right: 13px; border-radius: 13px; }
+  .tabs { margin: 12px 0; border-radius: 15px; scroll-snap-type: x proximity; }
+  .tab-btn { min-width: 104px; padding: 10px 14px; scroll-snap-align: start; }
+  .card { padding: 16px; border-radius: 17px; }
+  .field, .field.small { grid-column: 1 / -1; }
+  input, textarea, select { font-size: 16px; }
+  .actions .btn { flex: 1 1 100%; width: 100%; }
+  .summary { grid-template-columns: 1fr; }
+  .kv { padding: 12px; }
+  .ipv6-format-row { grid-template-columns: 68px minmax(0, 1fr); align-items: start; }
+  .copyable { align-items: flex-start; }
+  .table-wrap { margin-right: -2px; }
+  table { min-width: 690px; font-size: 13px; }
+  .reference-table table { min-width: 500px; }
+  th, td { padding: 10px 11px; }
+}
+
+@media (max-width: 430px) {
+  .app-shell { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+  .hero { padding: 16px; }
+  .badges { gap: 6px; margin-top: 13px; }
+  .badge { padding: 5px 8px; font-size: 11px; }
+  .card { padding: 14px; }
+  .tab-btn { min-width: 96px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+@media print {
+  :root { color-scheme: light; }
+  .tabs, .actions, .icon-btn, .copy-mini, .ip-refresh-button, .ip-info-button, .ip-details-toolbar { display: none !important; }
+  body { color: #000; background: #fff; }
+  .app-shell { max-width: none; padding: 0; }
+  .card, .hero { break-inside: avoid; border-color: #bbb; background: #fff; box-shadow: none; backdrop-filter: none; }
+  .tab-panel { display: block !important; }
+  .table-wrap { max-height: none; overflow: visible; }
+  table { min-width: 0; }
+}
+
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="hero">
+    <h1>Calculadora IPv4 & IPv6</h1>
+    <button id="theme-toggle" class="icon-btn" type="button" aria-label="Alternar entre tema claro e escuro" title="Alternar tema">☀️</button>
+  </header>
+
+  <section class="public-ip-panel" aria-labelledby="public-ip-title">
+    <div class="public-ip-heading">
+      <div>
+        <span class="eyebrow">Conexão atual</span>
+        <h2 id="public-ip-title">Meus endereços públicos</h2>
+      </div>
+      <button id="public-ip-refresh" class="ip-refresh-button" type="button" aria-label="Atualizar endereços públicos">
+        <span aria-hidden="true">↻</span> Atualizar
+      </button>
+    </div>
+    <div class="public-ip-grid" aria-live="polite">
+      <article class="public-ip-card">
+        <div class="public-ip-meta">
+          <span class="ip-version">Meu IPv4</span>
+          <span id="public-ipv4-status" class="ip-status loading">Consultando</span>
+        </div>
+        <div class="public-ip-value-row">
+          <strong id="public-ipv4" class="ip-value">Consultando…</strong>
+          <div class="public-ip-actions">
+            <button id="public-ipv4-copy" class="copy-mini public-ip-copy" type="button" data-copy="" aria-label="Copiar Meu IPv4" title="Copiar Meu IPv4" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>
+            <button id="public-ipv4-info" class="ip-info-button" type="button" data-ip-version="4" disabled>Ver informações</button>
+          </div>
+        </div>
+        <span id="public-ipv4-detail" class="ip-detail">Detectando o endereço público via IPinfo.</span>
+      </article>
+      <article class="public-ip-card">
+        <div class="public-ip-meta">
+          <span class="ip-version">Meu IPv6</span>
+          <span id="public-ipv6-status" class="ip-status loading">Consultando</span>
+        </div>
+        <div class="public-ip-value-row">
+          <strong id="public-ipv6" class="ip-value">Consultando…</strong>
+          <div class="public-ip-actions">
+            <button id="public-ipv6-copy" class="copy-mini public-ip-copy" type="button" data-copy="" aria-label="Copiar Meu IPv6" title="Copiar Meu IPv6" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>
+            <button id="public-ipv6-info" class="ip-info-button" type="button" data-ip-version="6" disabled>Ver informações</button>
+          </div>
+        </div>
+        <span id="public-ipv6-detail" class="ip-detail">Será exibido somente quando houver conectividade IPv6.</span>
+      </article>
+    </div>
+    <p class="public-ip-note">A detecção usa o IPinfo. A página de informações consulta o ipconfig.io e usa o IPinfo como alternativa. Os cálculos de rede continuam locais.</p>
+  </section>
+
+  <nav class="tabs" aria-label="Módulos">
+    <button class="tab-btn active" data-tab="tab-ipv4" type="button">IPv4</button>
+    <button class="tab-btn" data-tab="tab-ipv6" type="button">IPv6</button>
+    <button class="tab-btn" data-tab="tab-vlsm" type="button">VLSM</button>
+    <button class="tab-btn" data-tab="tab-tools" type="button">Ferramentas</button>
+  </nav>
+
+  <main>
+    <section id="tab-ipv4" class="tab-panel active">
+      <div class="grid">
+        <article class="card full">
+          <h2>Calculadora CIDR IPv4</h2><p class="help">Aceita prefixo CIDR, máscara após a barra ou máscara separada por espaço.</p>
+          <div class="form-grid"><div class="field full"><label for="ipv4-input">Endereço ou bloco</label><input id="ipv4-input" value="0.0.0.0/0" placeholder="192.168.0.1/24 ou 192.168.0.1/255.255.255.0" inputmode="decimal" autocomplete="off"></div></div>
+          <div class="actions"><button id="ipv4-calc" class="btn primary" type="button">Calcular IPv4</button></div><div id="ipv4-result" class="result"></div>
+        </article>
+        <article class="card full">
+          <h2>Divisor de sub-redes IPv4</h2><p class="help">O bloco base é sincronizado automaticamente com a rede calculada acima. A listagem é limitada para evitar travamentos em divisões muito grandes.</p>
+          <div class="form-grid">
+            <div class="field"><label for="ipv4-subnet-base">Bloco base sincronizado</label><input id="ipv4-subnet-base" value="0.0.0.0/0" autocomplete="off"><span class="field-hint">Atualizado ao aplicar a Calculadora CIDR IPv4.</span></div>
+            <div class="field small"><label for="ipv4-subnet-prefix">Novo prefixo</label><input id="ipv4-subnet-prefix" type="number" min="0" max="32" value="8" inputmode="numeric"></div>
+            <div class="field small"><label for="ipv4-subnet-start">Índice inicial</label><input id="ipv4-subnet-start" type="number" min="0" value="0"></div>
+            <div class="field small"><label for="ipv4-subnet-limit">Listar</label><input id="ipv4-subnet-limit" type="number" min="1" max="1000" value="32"></div>
+          </div>
+          <div class="actions"><button id="ipv4-subnet-calc" class="btn primary" type="button">Dividir IPv4</button></div><div id="ipv4-subnet-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Prefixo por quantidade de hosts</h2><p class="help">Encontra o menor bloco IPv4 que atende à capacidade informada.</p>
+          <div class="form-grid"><div class="field full"><label for="host4-count">Hosts utilizáveis necessários</label><input id="host4-count" type="number" min="1" value="120"></div></div>
+          <label class="inline-check"><input id="host4-allow31" type="checkbox" checked> Permitir /31 para dois hosts ponto a ponto</label>
+          <div class="actions"><button id="host4-calc" class="btn primary" type="button">Sugerir prefixo</button></div><div id="host4-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Referência rápida IPv4</h2>
+          <div class="table-wrap reference-table"><table><thead><tr><th>Prefixo</th><th>Máscara</th><th>Total</th><th>Usáveis*</th></tr></thead><tbody id="ipv4-reference-body"></tbody></table></div><p class="help">*Modelo tradicional, exceto /31 conforme RFC 3021. A tabela cobre todos os prefixos, de /0 a /32.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-ipv6" class="tab-panel">
+      <div class="grid">
+        <article class="card full">
+          <h2>Calculadora CIDR IPv6</h2><p class="help">Normaliza conforme a representação canônica, expande hextetos e calcula a faixa completa de 128 bits.</p>
+          <div class="form-grid"><div class="field full"><label for="ipv6-input">Endereço ou bloco</label><input id="ipv6-input" value="fd00::1/64" placeholder="2001:db8:1234:10::25/64"></div></div>
+          <div class="actions"><button id="ipv6-calc" class="btn primary" type="button">Calcular IPv6</button></div><div id="ipv6-result" class="result"></div>
+        </article>
+        <article class="card full">
+          <h2>Divisor de sub-redes IPv6</h2><p class="help">Calcula quantidades gigantes com precisão e lista apenas a faixa solicitada.</p>
+          <div class="form-grid">
+            <div class="field"><label for="ipv6-subnet-base">Bloco base</label><input id="ipv6-subnet-base" value="2001:db8:5000::/48"></div>
+            <div class="field small"><label for="ipv6-subnet-prefix">Novo prefixo</label><input id="ipv6-subnet-prefix" type="number" min="0" max="128" value="56"></div>
+            <div class="field small"><label for="ipv6-subnet-start">Índice inicial</label><input id="ipv6-subnet-start" type="number" min="0" value="0"></div>
+            <div class="field small"><label for="ipv6-subnet-limit">Listar</label><input id="ipv6-subnet-limit" type="number" min="1" max="1000" value="32"></div>
+          </div>
+          <div class="actions"><button id="ipv6-subnet-calc" class="btn primary" type="button">Dividir IPv6</button></div><div id="ipv6-subnet-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Prefixo por capacidade matemática</h2><p class="help">Sugere o menor prefixo pela quantidade de endereços. Para LANs com SLAAC, use normalmente /64.</p>
+          <div class="form-grid"><div class="field full"><label for="host6-count">Endereços necessários</label><input id="host6-count" type="number" min="1" value="1000"></div></div>
+          <div class="actions"><button id="host6-calc" class="btn primary" type="button">Sugerir prefixo</button></div><div id="host6-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Referência rápida IPv6</h2>
+          <div class="table-wrap"><table><thead><tr><th>Bloco recebido</th><th>Redes /64</th></tr></thead><tbody><tr><td>/48</td><td>65.536</td></tr><tr><td>/52</td><td>4.096</td></tr><tr><td>/56</td><td>256</td></tr><tr><td>/60</td><td>16</td></tr><tr><td>/64</td><td>1</td></tr></tbody></table></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-vlsm" class="tab-panel">
+      <div class="grid">
+        <article class="card full">
+          <h2>Planejador VLSM IPv4</h2><p class="help">Ordena as necessidades da maior para a menor, alinha cada bloco e verifica se tudo cabe no prefixo base.</p>
+          <div class="form-grid">
+            <div class="field"><label for="vlsm-base">Bloco disponível</label><input id="vlsm-base" value="192.168.0.0/22"></div>
+            <div class="field"><label for="vlsm-lines">Redes e hosts utilizáveis</label><textarea id="vlsm-lines" aria-describedby="vlsm-enter-hint">Administrativo: 120
+Wi-Fi: 250
+CFTV: 60
+Telefonia: 30
+Ponto-a-ponto: 2</textarea><span id="vlsm-enter-hint" class="field-hint">Enter aplica o cálculo; Shift+Enter adiciona uma nova linha.</span></div>
+          </div>
+          <label class="inline-check"><input id="vlsm-allow31" type="checkbox" checked> Permitir /31 em demandas de dois hosts</label>
+          <div class="actions"><button id="vlsm-calc" class="btn secondary" type="button">Gerar plano VLSM</button></div><div id="vlsm-result" class="result"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-tools" class="tab-panel">
+      <div class="grid">
+        <article class="card">
+          <h2>Comparar redes</h2><p class="help">Verifica igualdade, contenção e sobreposição. Os dois blocos devem ser IPv4 ou ambos IPv6.</p>
+          <div class="form-grid"><div class="field full"><label for="compare-a">Bloco A</label><input id="compare-a" value="10.0.0.0/8"></div><div class="field full"><label for="compare-b">Bloco B</label><input id="compare-b" value="10.20.0.0/16"></div></div>
+          <div class="actions"><button id="compare-calc" class="btn primary" type="button">Comparar</button></div><div id="compare-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>MAC para EUI‑64</h2><p class="help">Insere FF:FE e inverte o bit U/L do primeiro byte.</p>
+          <div class="form-grid"><div class="field full"><label for="eui-prefix">Prefixo IPv6</label><input id="eui-prefix" value="2001:db8:1234:10::/64"></div><div class="field full"><label for="eui-mac">Endereço MAC</label><input id="eui-mac" value="00:1A:2B:3C:4D:5E"></div></div>
+          <div class="actions"><button id="eui-calc" class="btn primary" type="button">Gerar EUI‑64</button></div><div id="eui-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Gerador de ULA</h2><p class="help">Gera localmente um Global ID pseudoaleatório de 40 bits e entrega um prefixo fd00::/8 no formato /48.</p>
+          <div class="actions"><button id="ula-generate" class="btn secondary" type="button">Gerar novo ULA</button></div><div id="ula-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Notas operacionais</h2>
+          <ul><li>IPv6 não possui broadcast.</li><li>O cálculo usa inteiros exatos, sem arredondamento de 128 bits.</li><li>O divisor limita a visualização a 1.000 linhas por consulta.</li><li>/31 IPv4 e /127 IPv6 são apropriados em cenários ponto a ponto específicos.</li><li>Não use prefixos de documentação em produção.</li></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section id="ip-details-page" class="ip-details-page" hidden aria-labelledby="ip-details-title">
+    <div class="ip-details-toolbar">
+      <button id="ip-details-back" class="btn ghost ip-details-back" type="button">← Voltar para a calculadora</button>
+      <button id="ip-details-refresh" class="ip-refresh-button" type="button"><span aria-hidden="true">↻</span> Atualizar informações</button>
+    </div>
+    <article class="card ip-details-card">
+      <span class="eyebrow">Consulta do endereço público</span>
+      <h2 id="ip-details-title">Informações do IP</h2>
+      <p id="ip-details-subtitle" class="help">Carregando informações…</p>
+      <div id="ip-details-result" class="result"></div>
+    </article>
+  </section>
+  <footer>Calculadora CIDR local. A detecção e as informações dos IPs públicos dependem de serviços externos.</footer>
+</div>
+<script>
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.IPCore = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const MAX4 = (1n << 32n) - 1n;
+  const MAX6 = (1n << 128n) - 1n;
+
+  function assert(condition, message) {
+    if (!condition) throw new Error(message);
+  }
+
+  function pow2(exp) {
+    exp = Number(exp);
+    assert(Number.isInteger(exp) && exp >= 0, 'Expoente inválido.');
+    return 1n << BigInt(exp);
+  }
+
+  function formatInteger(value) {
+    return BigInt(value).toLocaleString('pt-BR');
+  }
+
+  function formatPowerOfTwo(exp) {
+    const n = pow2(exp);
+    return `${formatInteger(n)} (2^${exp})`;
+  }
+
+  // ---------- IPv4 ----------
+  function parseIPv4(text) {
+    const value = String(text).trim();
+    const parts = value.split('.');
+    assert(parts.length === 4, 'IPv4 deve conter quatro octetos.');
+    let result = 0n;
+    for (const part of parts) {
+      assert(/^\d{1,3}$/.test(part), `Octeto IPv4 inválido: ${part || '(vazio)'}.`);
+      const octet = Number(part);
+      assert(octet >= 0 && octet <= 255, `Octeto fora do intervalo 0–255: ${part}.`);
+      result = (result << 8n) | BigInt(octet);
+    }
+    return result;
+  }
+
+  function intToIPv4(value) {
+    value = BigInt(value);
+    assert(value >= 0n && value <= MAX4, 'Valor IPv4 fora do intervalo.');
+    return [24n, 16n, 8n, 0n].map(shift => Number((value >> shift) & 255n)).join('.');
+  }
+
+  function prefixToMask4(prefix) {
+    prefix = Number(prefix);
+    assert(Number.isInteger(prefix) && prefix >= 0 && prefix <= 32, 'Prefixo IPv4 deve estar entre /0 e /32.');
+    return prefix === 0 ? 0n : (MAX4 << BigInt(32 - prefix)) & MAX4;
+  }
+
+  function maskToPrefix4(maskText) {
+    const mask = parseIPv4(maskText);
+    const binary = mask.toString(2).padStart(32, '0');
+    assert(/^1*0*$/.test(binary), 'Máscara IPv4 não é contígua.');
+    return binary.indexOf('0') === -1 ? 32 : binary.indexOf('0');
+  }
+
+  function parseCIDR4(input, defaultPrefix = 24) {
+    let text = String(input).trim();
+    assert(text, 'Informe um endereço ou bloco IPv4.');
+    let addressText = text;
+    let prefix = defaultPrefix;
+
+    if (text.includes('/')) {
+      const slash = text.lastIndexOf('/');
+      addressText = text.slice(0, slash).trim();
+      const suffix = text.slice(slash + 1).trim();
+      prefix = suffix.includes('.') ? maskToPrefix4(suffix) : Number(suffix);
+    } else {
+      const tokens = text.split(/\s+/);
+      if (tokens.length === 2) {
+        addressText = tokens[0];
+        prefix = tokens[1].includes('.') ? maskToPrefix4(tokens[1]) : Number(tokens[1]);
+      }
+    }
+
+    assert(Number.isInteger(prefix) && prefix >= 0 && prefix <= 32, 'Prefixo IPv4 deve estar entre /0 e /32.');
+    const ip = parseIPv4(addressText);
+    const mask = prefixToMask4(prefix);
+    const wildcard = MAX4 ^ mask;
+    const network = ip & mask;
+    const broadcast = network | wildcard;
+    const total = pow2(32 - prefix);
+
+    let usable, firstUsable, lastUsable, hostRule;
+    if (prefix <= 30) {
+      usable = total - 2n;
+      firstUsable = network + 1n;
+      lastUsable = broadcast - 1n;
+      hostRule = 'Rede e broadcast reservados';
+    } else if (prefix === 31) {
+      usable = 2n;
+      firstUsable = network;
+      lastUsable = broadcast;
+      hostRule = 'RFC 3021: ambos os endereços podem ser usados em enlace ponto a ponto';
+    } else {
+      usable = 1n;
+      firstUsable = network;
+      lastUsable = network;
+      hostRule = 'Rota de host /32';
+    }
+
+    return {
+      family: 4,
+      input: text,
+      ip,
+      prefix,
+      mask,
+      wildcard,
+      network,
+      broadcast,
+      first: network,
+      last: broadcast,
+      total,
+      usable,
+      firstUsable,
+      lastUsable,
+      hostBits: 32 - prefix,
+      hostRule,
+      cidr: `${intToIPv4(network)}/${prefix}`
+    };
+  }
+
+  function ipv4Binary(value) {
+    return BigInt(value).toString(2).padStart(32, '0').match(/.{8}/g).join('.');
+  }
+
+  function ipv4Hex(value) {
+    return '0x' + BigInt(value).toString(16).padStart(8, '0').toUpperCase();
+  }
+
+  function isIn4(ip, base, prefix) {
+    const mask = prefixToMask4(prefix);
+    return (ip & mask) === (base & mask);
+  }
+
+  function classifyIPv4(ip) {
+    ip = BigInt(ip);
+    const exact = (addr) => ip === parseIPv4(addr);
+    const range = (addr, prefix) => isIn4(ip, parseIPv4(addr), prefix);
+
+    if (exact('0.0.0.0')) return { label: 'Não especificado', scope: 'Especial', globallyReachable: false };
+    if (range('0.0.0.0', 8)) return { label: 'Rede atual / “this network”', scope: 'Especial', globallyReachable: false };
+    if (range('10.0.0.0', 8) || range('172.16.0.0', 12) || range('192.168.0.0', 16)) return { label: 'Privado (RFC 1918)', scope: 'Local', globallyReachable: false };
+    if (range('100.64.0.0', 10)) return { label: 'Espaço compartilhado CGNAT', scope: 'Operadora', globallyReachable: false };
+    if (range('127.0.0.0', 8)) return { label: 'Loopback', scope: 'Host', globallyReachable: false };
+    if (range('169.254.0.0', 16)) return { label: 'Link-local', scope: 'Enlace', globallyReachable: false };
+    if (range('192.0.2.0', 24) || range('198.51.100.0', 24) || range('203.0.113.0', 24)) return { label: 'Documentação TEST-NET', scope: 'Documentação', globallyReachable: false };
+    if (range('192.0.0.0', 24)) return { label: 'Atribuições de protocolo IETF', scope: 'Especial', globallyReachable: false };
+    if (range('198.18.0.0', 15)) return { label: 'Benchmark/testes de dispositivos', scope: 'Teste', globallyReachable: false };
+    if (range('224.0.0.0', 4)) return { label: 'Multicast', scope: 'Grupo', globallyReachable: false };
+    if (range('240.0.0.0', 4)) return { label: exact('255.255.255.255') ? 'Broadcast limitado' : 'Reservado', scope: 'Especial', globallyReachable: false };
+    return { label: 'Unicast público', scope: 'Global', globallyReachable: true };
+  }
+
+  function reverseDNS4(ip) {
+    return intToIPv4(ip).split('.').reverse().join('.') + '.in-addr.arpa';
+  }
+
+  function subnet4(baseInput, newPrefix, startIndex = 0n, limit = 64) {
+    const base = parseCIDR4(baseInput);
+    newPrefix = Number(newPrefix);
+    assert(Number.isInteger(newPrefix) && newPrefix >= base.prefix && newPrefix <= 32, `Novo prefixo deve estar entre /${base.prefix} e /32.`);
+    startIndex = BigInt(startIndex);
+    limit = Number(limit);
+    assert(startIndex >= 0n, 'Índice inicial deve ser positivo.');
+    assert(Number.isInteger(limit) && limit >= 1 && limit <= 1000, 'Quantidade para listar deve estar entre 1 e 1000.');
+
+    const count = pow2(newPrefix - base.prefix);
+    assert(startIndex < count, `Índice inicial deve ser menor que ${formatInteger(count)}.`);
+    const blockSize = pow2(32 - newPrefix);
+    const items = [];
+    const end = startIndex + BigInt(limit) > count ? count : startIndex + BigInt(limit);
+
+    for (let i = startIndex; i < end; i++) {
+      const network = base.network + i * blockSize;
+      const cidr = parseCIDR4(`${intToIPv4(network)}/${newPrefix}`);
+      items.push({ index: i, ...cidr });
+    }
+
+    return { base, newPrefix, count, blockSize, startIndex, items };
+  }
+
+  function prefixForUsableHosts4(hosts, allow31 = true) {
+    hosts = BigInt(hosts);
+    assert(hosts >= 1n, 'Quantidade de hosts deve ser pelo menos 1.');
+    if (hosts === 1n) return 32;
+    if (hosts === 2n && allow31) return 31;
+    for (let hostBits = 2; hostBits <= 32; hostBits++) {
+      if (pow2(hostBits) - 2n >= hosts) return 32 - hostBits;
+    }
+    throw new Error('Quantidade de hosts excede o espaço IPv4.');
+  }
+
+  function parseVLSMLines(text) {
+    const rows = [];
+    String(text).split(/\r?\n/).forEach((line, idx) => {
+      const clean = line.trim();
+      if (!clean) return;
+      const match = clean.match(/^(.+?)[\s,:;=]+(\d+)$/);
+      assert(match, `Linha ${idx + 1} inválida. Use “Nome: quantidade”.`);
+      rows.push({ name: match[1].trim(), hosts: BigInt(match[2]), order: rows.length });
+    });
+    assert(rows.length > 0, 'Informe ao menos uma rede para o VLSM.');
+    return rows;
+  }
+
+  function alignUp(value, blockSize) {
+    const remainder = value % blockSize;
+    return remainder === 0n ? value : value + (blockSize - remainder);
+  }
+
+  function allocateVLSM4(baseInput, requirementsText, allow31 = true) {
+    const base = parseCIDR4(baseInput);
+    const requirements = parseVLSMLines(requirementsText).map(item => {
+      const prefix = prefixForUsableHosts4(item.hosts, allow31);
+      return { ...item, prefix, blockSize: pow2(32 - prefix) };
+    }).sort((a, b) => a.blockSize === b.blockSize ? a.order - b.order : (a.blockSize > b.blockSize ? -1 : 1));
+
+    let cursor = base.network;
+    const allocations = [];
+    for (const req of requirements) {
+      cursor = alignUp(cursor, req.blockSize);
+      const last = cursor + req.blockSize - 1n;
+      assert(last <= base.broadcast, `O bloco ${base.cidr} não comporta todas as redes solicitadas.`);
+      const cidr = parseCIDR4(`${intToIPv4(cursor)}/${req.prefix}`);
+      allocations.push({ ...req, ...cidr });
+      cursor = last + 1n;
+    }
+
+    const used = cursor - base.network;
+    return {
+      base,
+      allocations,
+      used,
+      free: base.total - used,
+      utilization: Number(used * 10000n / base.total) / 100
+    };
+  }
+
+  // ---------- IPv6 ----------
+  function parseIPv6(address) {
+    let text = String(address).trim().toLowerCase();
+    assert(text, 'Informe um endereço IPv6.');
+    if (text.startsWith('[') && text.endsWith(']')) text = text.slice(1, -1);
+
+    let zone = '';
+    const zoneAt = text.indexOf('%');
+    if (zoneAt !== -1) {
+      zone = text.slice(zoneAt + 1);
+      text = text.slice(0, zoneAt);
+      assert(zone, 'Índice de zona IPv6 inválido.');
+    }
+
+    if (text.includes('.')) {
+      const lastColon = text.lastIndexOf(':');
+      assert(lastColon !== -1, 'IPv4 incorporado ao IPv6 inválido.');
+      const v4 = parseIPv4(text.slice(lastColon + 1));
+      const high = ((v4 >> 16n) & 0xffffn).toString(16);
+      const low = (v4 & 0xffffn).toString(16);
+      const prefixPart = text.slice(0, lastColon);
+      text = prefixPart + (prefixPart.endsWith(':') ? '' : ':') + high + ':' + low;
+    }
+
+    assert((text.match(/::/g) || []).length <= 1, 'IPv6 possui mais de uma compressão “::”.');
+    let groups;
+    if (text.includes('::')) {
+      const [leftText, rightText] = text.split('::');
+      const left = leftText ? leftText.split(':') : [];
+      const right = rightText ? rightText.split(':') : [];
+      assert(left.length + right.length < 8, 'Compressão “::” não representa nenhum grupo.');
+      groups = [...left, ...Array(8 - left.length - right.length).fill('0'), ...right];
+    } else {
+      groups = text.split(':');
+      assert(groups.length === 8, 'IPv6 sem “::” deve conter oito hextetos.');
+    }
+
+    assert(groups.length === 8, 'IPv6 deve resultar em oito hextetos.');
+    let value = 0n;
+    for (const group of groups) {
+      assert(/^[0-9a-f]{1,4}$/.test(group), `Hexteto IPv6 inválido: ${group || '(vazio)'}.`);
+      value = (value << 16n) | BigInt('0x' + group);
+    }
+    return { value, zone };
+  }
+
+  function expandedIPv6(value) {
+    value = BigInt(value);
+    assert(value >= 0n && value <= MAX6, 'Valor IPv6 fora do intervalo.');
+    const groups = [];
+    for (let shift = 112n; shift >= 0n; shift -= 16n) groups.push(((value >> shift) & 0xffffn).toString(16).padStart(4, '0'));
+    return groups.join(':');
+  }
+
+  function compressedIPv6(value) {
+    const groups = expandedIPv6(value).split(':').map(group => group.replace(/^0+/, '') || '0');
+    let bestStart = -1, bestLen = 0;
+    for (let i = 0; i < groups.length;) {
+      if (groups[i] !== '0') { i++; continue; }
+      let j = i;
+      while (j < groups.length && groups[j] === '0') j++;
+      const len = j - i;
+      if (len >= 2 && len > bestLen) { bestStart = i; bestLen = len; }
+      i = j;
+    }
+    if (bestStart === -1) return groups.join(':');
+    const before = groups.slice(0, bestStart).join(':');
+    const after = groups.slice(bestStart + bestLen).join(':');
+    if (before && after) return `${before}::${after}`;
+    if (before) return `${before}::`;
+    if (after) return `::${after}`;
+    return '::';
+  }
+
+  function prefixToMask6(prefix) {
+    prefix = Number(prefix);
+    assert(Number.isInteger(prefix) && prefix >= 0 && prefix <= 128, 'Prefixo IPv6 deve estar entre /0 e /128.');
+    return prefix === 0 ? 0n : (MAX6 << BigInt(128 - prefix)) & MAX6;
+  }
+
+  function parseCIDR6(input, defaultPrefix = 64) {
+    const text = String(input).trim();
+    assert(text, 'Informe um endereço ou bloco IPv6.');
+    let addressText = text;
+    let prefix = defaultPrefix;
+    if (text.includes('/')) {
+      const slash = text.lastIndexOf('/');
+      addressText = text.slice(0, slash).trim();
+      prefix = Number(text.slice(slash + 1).trim());
+    }
+    assert(Number.isInteger(prefix) && prefix >= 0 && prefix <= 128, 'Prefixo IPv6 deve estar entre /0 e /128.');
+    const parsed = parseIPv6(addressText);
+    const mask = prefixToMask6(prefix);
+    const hostMask = MAX6 ^ mask;
+    const network = parsed.value & mask;
+    const last = network | hostMask;
+    const total = pow2(128 - prefix);
+    return {
+      family: 6,
+      input: text,
+      ip: parsed.value,
+      zone: parsed.zone,
+      prefix,
+      mask,
+      hostMask,
+      network,
+      first: network,
+      last,
+      total,
+      hostBits: 128 - prefix,
+      cidr: `${compressedIPv6(network)}/${prefix}`
+    };
+  }
+
+  function ipv6Binary(value) {
+    return BigInt(value).toString(2).padStart(128, '0').match(/.{16}/g).join(':');
+  }
+
+  function isIn6(ip, base, prefix) {
+    const mask = prefixToMask6(prefix);
+    return (ip & mask) === (base & mask);
+  }
+
+  function classifyIPv6(ip) {
+    ip = BigInt(ip);
+    const range = (addr, prefix) => isIn6(ip, parseIPv6(addr).value, prefix);
+    if (ip === 0n) return { label: 'Não especificado', scope: 'Especial', globallyReachable: false };
+    if (ip === 1n) return { label: 'Loopback', scope: 'Host', globallyReachable: false };
+    if (range('::ffff:0:0', 96)) return { label: 'IPv4 mapeado em IPv6', scope: 'Transição/API', globallyReachable: false, embeddedIPv4: intToIPv4(ip & MAX4) };
+    if (range('64:ff9b::', 96)) return { label: 'NAT64 — prefixo bem conhecido', scope: 'Tradução', globallyReachable: true, embeddedIPv4: intToIPv4(ip & MAX4) };
+    if (range('100::', 64)) return { label: 'Discard-only', scope: 'Especial', globallyReachable: false };
+    if (range('2001:db8::', 32)) return { label: 'Documentação', scope: 'Documentação', globallyReachable: false };
+    if (range('2002::', 16)) return { label: '6to4 (mecanismo legado)', scope: 'Transição', globallyReachable: true };
+    if (range('fc00::', 7)) return { label: 'Unique Local Address (ULA)', scope: 'Local', globallyReachable: false };
+    if (range('fe80::', 10)) return { label: 'Link-local', scope: 'Enlace', globallyReachable: false };
+    if (range('fec0::', 10)) return { label: 'Site-local descontinuado', scope: 'Legado', globallyReachable: false };
+    if (range('ff00::', 8)) {
+      const scopeCode = Number((ip >> 112n) & 0xfn);
+      const scopes = { 1: 'interface', 2: 'enlace', 3: 'realm', 4: 'admin', 5: 'site', 8: 'organização', 14: 'global' };
+      return { label: `Multicast (escopo ${scopes[scopeCode] || '0x' + scopeCode.toString(16)})`, scope: 'Grupo', globallyReachable: scopeCode === 14 };
+    }
+    if (range('2000::', 3)) return { label: 'Global Unicast', scope: 'Global', globallyReachable: true };
+    return { label: 'Unicast especial ou reservado', scope: 'Especial', globallyReachable: false };
+  }
+
+  function reverseDNS6(ip) {
+    const hex = BigInt(ip).toString(16).padStart(32, '0');
+    return hex.split('').reverse().join('.') + '.ip6.arpa';
+  }
+
+  function subnet6(baseInput, newPrefix, startIndex = 0n, limit = 64) {
+    const base = parseCIDR6(baseInput);
+    newPrefix = Number(newPrefix);
+    assert(Number.isInteger(newPrefix) && newPrefix >= base.prefix && newPrefix <= 128, `Novo prefixo deve estar entre /${base.prefix} e /128.`);
+    startIndex = BigInt(startIndex);
+    limit = Number(limit);
+    assert(startIndex >= 0n, 'Índice inicial deve ser positivo.');
+    assert(Number.isInteger(limit) && limit >= 1 && limit <= 1000, 'Quantidade para listar deve estar entre 1 e 1000.');
+
+    const count = pow2(newPrefix - base.prefix);
+    assert(startIndex < count, `Índice inicial deve ser menor que ${formatInteger(count)}.`);
+    const blockSize = pow2(128 - newPrefix);
+    const items = [];
+    const end = startIndex + BigInt(limit) > count ? count : startIndex + BigInt(limit);
+    for (let i = startIndex; i < end; i++) {
+      const network = base.network + i * blockSize;
+      items.push({ index: i, network, last: network + blockSize - 1n, cidr: `${compressedIPv6(network)}/${newPrefix}` });
+    }
+    return { base, newPrefix, count, blockSize, startIndex, items };
+  }
+
+  function eui64FromMac(macText) {
+    const clean = String(macText).trim().replace(/[-.]/g, ':');
+    let parts;
+    if (/^[0-9a-fA-F]{12}$/.test(clean)) parts = clean.match(/.{2}/g);
+    else parts = clean.split(':');
+    assert(parts.length === 6 && parts.every(p => /^[0-9a-fA-F]{2}$/.test(p)), 'MAC deve conter seis bytes hexadecimais.');
+    const bytes = parts.map(p => parseInt(p, 16));
+    bytes[0] ^= 0x02;
+    const eui = [bytes[0], bytes[1], bytes[2], 0xff, 0xfe, bytes[3], bytes[4], bytes[5]];
+    let iid = 0n;
+    for (const byte of eui) iid = (iid << 8n) | BigInt(byte);
+    return { iid, text: eui.map(b => b.toString(16).padStart(2, '0')).join(':') };
+  }
+
+  function addressFromEUI64(prefixInput, macText) {
+    const block = parseCIDR6(prefixInput);
+    assert(block.prefix <= 64, 'O prefixo para EUI-64 deve ser /64 ou menor.');
+    const prefix64 = block.network & prefixToMask6(64);
+    const eui = eui64FromMac(macText);
+    const address = prefix64 | eui.iid;
+    const linkLocal = parseIPv6('fe80::').value | eui.iid;
+    return { ...eui, address, linkLocal };
+  }
+
+  function generateULA(randomBytes) {
+    const bytes = randomBytes || (() => {
+      const arr = new Uint8Array(5);
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) crypto.getRandomValues(arr);
+      else for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+      return arr;
+    })();
+    assert(bytes.length === 5, 'ULA requer 40 bits aleatórios.');
+    let globalId = 0n;
+    for (const byte of bytes) globalId = (globalId << 8n) | BigInt(byte);
+    const prefixValue = (0xfdn << 120n) | (globalId << 80n);
+    return { globalId, prefixValue, cidr: `${compressedIPv6(prefixValue)}/48` };
+  }
+
+  function prefixForAddresses6(addresses) {
+    addresses = BigInt(addresses);
+    assert(addresses >= 1n, 'Quantidade deve ser pelo menos 1.');
+    let bits = 0;
+    let capacity = 1n;
+    while (capacity < addresses) { capacity <<= 1n; bits++; }
+    return { prefix: 128 - bits, capacity };
+  }
+
+  // ---------- Comparação ----------
+  function detectFamily(text) {
+    return String(text).includes(':') ? 6 : 4;
+  }
+
+  function compareCIDRs(aText, bText) {
+    const familyA = detectFamily(aText);
+    const familyB = detectFamily(bText);
+    assert(familyA === familyB, 'Os dois blocos devem pertencer à mesma família IP.');
+    const a = familyA === 4 ? parseCIDR4(aText) : parseCIDR6(aText);
+    const b = familyA === 4 ? parseCIDR4(bText) : parseCIDR6(bText);
+    const aContainsB = a.network <= b.network && a.last >= b.last;
+    const bContainsA = b.network <= a.network && b.last >= a.last;
+    const overlaps = a.network <= b.last && b.network <= a.last;
+    return { family: familyA, a, b, aContainsB, bContainsA, overlaps, same: a.network === b.network && a.prefix === b.prefix };
+  }
+
+  return {
+    MAX4, MAX6, pow2, formatInteger, formatPowerOfTwo,
+    parseIPv4, intToIPv4, prefixToMask4, maskToPrefix4, parseCIDR4, ipv4Binary, ipv4Hex, classifyIPv4, reverseDNS4, subnet4, prefixForUsableHosts4, allocateVLSM4,
+    parseIPv6, expandedIPv6, compressedIPv6, prefixToMask6, parseCIDR6, ipv6Binary, classifyIPv6, reverseDNS6, subnet6, eui64FromMac, addressFromEUI64, generateULA, prefixForAddresses6,
+    detectFamily, compareCIDRs
+  };
+});
+
+</script><script>
+'use strict';
+const C = window.IPCore;
+const $ = (id) => document.getElementById(id);
+const escapeHTML = (v) => String(v).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+const fmt = C.formatInteger;
+const safeStorage = {
+  get(key) { try { return window.localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { window.localStorage.setItem(key, value); } catch {} }
+};
+let lastTable = null;
+
+const COPY_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>`;
+const CHECK_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>`;
+
+function copyable(value, label = 'Copiar valor') {
+  const safe = escapeHTML(value);
+  const safeLabel = escapeHTML(label);
+  return `<span class="copyable"><code>${safe}</code><button class="copy-mini" type="button" data-copy="${safe}" aria-label="${safeLabel}" title="${safeLabel}">${COPY_ICON}</button></span>`;
+}
+function kv(key, value, raw = false) { return `<div class="kv"><div class="k">${escapeHTML(key)}</div><div class="v">${raw ? value : copyable(value)}</div></div>`; }
+function ipv6Formats(value, { prefix = null, zone = '' } = {}) {
+  const zoneText = zone ? `%${zone}` : '';
+  const prefixText = prefix === null ? '' : `/${prefix}`;
+  return {
+    reduced: `${C.compressedIPv6(value)}${zoneText}${prefixText}`,
+    complete: `${C.expandedIPv6(value)}${zoneText}${prefixText}`
+  };
+}
+function ipv6Dual(value, options = {}) {
+  const forms = ipv6Formats(value, options);
+  return `<div class="ipv6-dual">
+    <div class="ipv6-format-row"><span class="ipv6-format-label">Reduzido</span>${copyable(forms.reduced, 'Copiar IPv6 reduzido')}</div>
+    <div class="ipv6-format-row"><span class="ipv6-format-label">Completo</span>${copyable(forms.complete, 'Copiar IPv6 completo')}</div>
+  </div>`;
+}
+function kvIPv6(key, value, options = {}) { return kv(key, ipv6Dual(value, options), true); }
+function errorHTML(err) { return `<div class="alert"><strong>Não foi possível calcular.</strong><br>${escapeHTML(err.message || err)}</div>`; }
+function render(id, fn) { try { $(id).innerHTML = fn(); } catch (err) { $(id).innerHTML = errorHTML(err); } }
+function prefixCountText(total, exponent) { return `${fmt(total)} (2^${exponent})`; }
+
+function syncIPv4SubnetBase(cidr) {
+  const baseInput = $('ipv4-subnet-base');
+  const prefixInput = $('ipv4-subnet-prefix');
+  if (!baseInput || !prefixInput) return;
+
+  baseInput.value = cidr.cidr;
+  prefixInput.min = String(cidr.prefix);
+  const currentPrefix = Number(prefixInput.value);
+  if (!Number.isInteger(currentPrefix) || currentPrefix < cidr.prefix || currentPrefix > 32) {
+    prefixInput.value = String(cidr.prefix < 32 ? cidr.prefix + 1 : 32);
+  }
+
+  baseInput.classList.remove('is-synced');
+  requestAnimationFrame(() => baseInput.classList.add('is-synced'));
+  window.setTimeout(() => baseInput.classList.remove('is-synced'), 900);
+}
+
+function renderIPv4Reference() {
+  const body = $('ipv4-reference-body');
+  if (!body) return;
+  body.innerHTML = Array.from({ length: 33 }, (_, prefix) => {
+    const mask = C.intToIPv4(C.prefixToMask4(prefix));
+    const total = C.pow2(32 - prefix);
+    const usable = prefix === 31 ? '2 em P2P' : prefix === 32 ? '1' : fmt(total - 2n);
+    return `<tr><td><strong>/${prefix}</strong></td><td class="mono">${mask}</td><td>${fmt(total)}</td><td>${usable}</td></tr>`;
+  }).join('');
+}
+
+function calculateIPv4() {
+  render('ipv4-result', () => {
+    const r = C.parseCIDR4($('ipv4-input').value);
+    syncIPv4SubnetBase(r);
+    const type = C.classifyIPv4(r.ip);
+    return `<div class="summary">
+      ${kv('Endereço informado', C.intToIPv4(r.ip))}
+      ${kv('Rede CIDR', r.cidr)}
+      ${kv('Máscara', C.intToIPv4(r.mask))}
+      ${kv('Wildcard', C.intToIPv4(r.wildcard))}
+      ${kv('Broadcast', C.intToIPv4(r.broadcast))}
+      ${kv('Primeiro utilizável', C.intToIPv4(r.firstUsable))}
+      ${kv('Último utilizável', C.intToIPv4(r.lastUsable))}
+      ${kv('Total de endereços', prefixCountText(r.total, 32-r.prefix))}
+      ${kv('Endereços utilizáveis', fmt(r.usable))}
+      ${kv('Bits de host', String(r.hostBits))}
+      ${kv('Classificação', `${type.label} — ${type.scope}`)}
+      ${kv('DNS reverso', C.reverseDNS4(r.ip))}
+      ${kv('Inteiro decimal', r.ip.toString())}
+      ${kv('Hexadecimal', C.ipv4Hex(r.ip))}
+      ${kv('Binário do IP', C.ipv4Binary(r.ip))}
+      ${kv('Binário da máscara', C.ipv4Binary(r.mask))}
+    </div><div class="notice">${escapeHTML(r.hostRule)}.</div>`;
+  });
+}
+
+function calculateIPv4Subnets() {
+  render('ipv4-subnet-result', () => {
+    const r = C.subnet4($('ipv4-subnet-base').value, $('ipv4-subnet-prefix').value, BigInt($('ipv4-subnet-start').value || 0), Number($('ipv4-subnet-limit').value || 64));
+    lastTable = {
+      filename: 'sub-redes-ipv4.csv',
+      headers: ['Índice','CIDR','Máscara','Primeiro utilizável','Último utilizável','Broadcast','Total','Utilizáveis'],
+      rows: r.items.map(x => [x.index.toString(),x.cidr,C.intToIPv4(x.mask),C.intToIPv4(x.firstUsable),C.intToIPv4(x.lastUsable),C.intToIPv4(x.broadcast),x.total.toString(),x.usable.toString()])
+    };
+    const rows = r.items.map(x => `<tr><td>${fmt(x.index)}</td><td>${copyable(x.cidr)}</td><td>${C.intToIPv4(x.mask)}</td><td>${C.intToIPv4(x.firstUsable)}</td><td>${C.intToIPv4(x.lastUsable)}</td><td>${C.intToIPv4(x.broadcast)}</td><td>${fmt(x.total)}</td><td>${fmt(x.usable)}</td></tr>`).join('');
+    return `<div class="summary">${kv('Bloco base',r.base.cidr)}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',fmt(r.blockSize))}</div>
+    <div class="actions"><button class="btn ghost" type="button" data-export>Exportar tabela CSV</button></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Rede</th><th>Máscara</th><th>Primeiro</th><th>Último</th><th>Broadcast</th><th>Total</th><th>Utilizáveis</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  });
+}
+
+function calculateHostPlanner4() {
+  render('host4-result', () => {
+    const hosts = BigInt($('host4-count').value);
+    const prefix = C.prefixForUsableHosts4(hosts, $('host4-allow31').checked);
+    const r = C.parseCIDR4(`0.0.0.0/${prefix}`);
+    return `<div class="summary">${kv('Prefixo mínimo','/'+prefix)}${kv('Máscara',C.intToIPv4(r.mask))}${kv('Total no bloco',fmt(r.total))}${kv('Utilizáveis',fmt(r.usable))}${kv('Desperdício',fmt(r.usable-hosts))}</div>`;
+  });
+}
+
+function calculateIPv6() {
+  render('ipv6-result', () => {
+    const r = C.parseCIDR6($('ipv6-input').value);
+    const type = C.classifyIPv6(r.ip);
+    const count64 = r.prefix <= 64 ? prefixCountText(C.pow2(64-r.prefix),64-r.prefix) : 'O bloco é mais específico que /64';
+    return `<div class="summary">
+      ${kvIPv6('Endereço informado', r.ip, { zone: r.zone })}
+      ${kvIPv6('Prefixo de rede', r.network, { prefix: r.prefix })}
+      ${kvIPv6('Primeiro endereço', r.first)}
+      ${kvIPv6('Último endereço', r.last)}
+      ${kv('Total de endereços', prefixCountText(r.total,128-r.prefix))}
+      ${kv('Bits de interface/host', String(r.hostBits))}
+      ${kv('Redes /64 contidas', count64)}
+      ${kv('Classificação', `${type.label} — ${type.scope}`)}
+      ${type.embeddedIPv4 ? kv('IPv4 incorporado',type.embeddedIPv4) : ''}
+      ${kv('DNS reverso', C.reverseDNS6(r.ip))}
+      ${kv('Inteiro decimal', r.ip.toString())}
+      ${kv('Hexadecimal 128 bits', '0x'+r.ip.toString(16).padStart(32,'0'))}
+      ${kv('Binário', C.ipv6Binary(r.ip))}
+    </div>`;
+  });
+}
+
+function calculateIPv6Subnets() {
+  render('ipv6-subnet-result', () => {
+    const r = C.subnet6($('ipv6-subnet-base').value, $('ipv6-subnet-prefix').value, BigInt($('ipv6-subnet-start').value || 0), Number($('ipv6-subnet-limit').value || 64));
+    lastTable = {
+      filename: 'sub-redes-ipv6.csv',
+      headers: ['Índice','CIDR reduzido','CIDR completo','Primeiro reduzido','Primeiro completo','Último reduzido','Último completo','Endereços'],
+      rows: r.items.map(x => {
+        const cidr = ipv6Formats(x.network, { prefix: r.newPrefix });
+        const first = ipv6Formats(x.network);
+        const last = ipv6Formats(x.last);
+        return [x.index.toString(),cidr.reduced,cidr.complete,first.reduced,first.complete,last.reduced,last.complete,r.blockSize.toString()];
+      })
+    };
+    const rows = r.items.map(x => `<tr><td>${fmt(x.index)}</td><td>${ipv6Dual(x.network, { prefix: r.newPrefix })}</td><td>${ipv6Dual(x.network)}</td><td>${ipv6Dual(x.last)}</td><td>${fmt(r.blockSize)}</td></tr>`).join('');
+    return `<div class="summary">${kvIPv6('Bloco base',r.base.network,{ prefix: r.base.prefix })}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',prefixCountText(r.blockSize,128-r.newPrefix))}</div>
+    <div class="actions"><button class="btn ghost" type="button" data-export>Exportar tabela CSV</button></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Rede</th><th>Primeiro</th><th>Último</th><th>Endereços</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  });
+}
+
+function calculateHostPlanner6() {
+  render('host6-result', () => {
+    const r = C.prefixForAddresses6(BigInt($('host6-count').value));
+    return `<div class="summary">${kv('Prefixo matemático mínimo','/'+r.prefix)}${kv('Capacidade',prefixCountText(r.capacity,128-r.prefix))}${kv('Observação','Para LAN IPv6 com SLAAC, preserve /64')}</div>`;
+  });
+}
+
+function calculateVLSM() {
+  render('vlsm-result', () => {
+    const r = C.allocateVLSM4($('vlsm-base').value, $('vlsm-lines').value, $('vlsm-allow31').checked);
+    lastTable = {
+      filename: 'plano-vlsm.csv', headers: ['Rede','Hosts pedidos','CIDR','Máscara','Primeiro','Último','Broadcast','Utilizáveis'],
+      rows: r.allocations.map(x => [x.name,x.hosts.toString(),x.cidr,C.intToIPv4(x.mask),C.intToIPv4(x.firstUsable),C.intToIPv4(x.lastUsable),C.intToIPv4(x.broadcast),x.usable.toString()])
+    };
+    const rows = r.allocations.map(x => `<tr><td>${escapeHTML(x.name)}</td><td>${fmt(x.hosts)}</td><td>${copyable(x.cidr)}</td><td>${C.intToIPv4(x.mask)}</td><td>${C.intToIPv4(x.firstUsable)}</td><td>${C.intToIPv4(x.lastUsable)}</td><td>${C.intToIPv4(x.broadcast)}</td><td>${fmt(x.usable)}</td></tr>`).join('');
+    return `<div class="summary">${kv('Bloco base',r.base.cidr)}${kv('Endereços ocupados',fmt(r.used))}${kv('Endereços livres',fmt(r.free))}${kv('Utilização',r.utilization.toFixed(2)+'%')}</div><div class="progress"><span style="width:${Math.min(100,r.utilization)}%"></span></div>
+    <div class="actions"><button class="btn ghost" type="button" data-export>Exportar plano CSV</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Necessários</th><th>Bloco</th><th>Máscara</th><th>Primeiro</th><th>Último</th><th>Broadcast</th><th>Capacidade</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  });
+}
+
+function calculateCompare() {
+  render('compare-result', () => {
+    const r = C.compareCIDRs($('compare-a').value,$('compare-b').value);
+    const nameA = r.a.cidr, nameB = r.b.cidr;
+    return `<div class="summary">${kv('Bloco A',nameA)}${kv('Bloco B',nameB)}${kv('Mesma rede?',r.same?'Sim':'Não')}${kv('Há sobreposição?',r.overlaps?'Sim':'Não')}${kv('A contém B?',r.aContainsB?'Sim':'Não')}${kv('B contém A?',r.bContainsA?'Sim':'Não')}</div>`;
+  });
+}
+
+function calculateEUI64() {
+  render('eui-result', () => {
+    const r = C.addressFromEUI64($('eui-prefix').value,$('eui-mac').value);
+    return `<div class="summary">${kv('Interface ID EUI-64',r.text)}${kvIPv6('Endereço no prefixo',r.address)}${kvIPv6('Link-local derivado',r.linkLocal)}</div><div class="notice">EUI-64 é útil para estudo e interoperabilidade. Sistemas modernos frequentemente usam identificadores estáveis ou temporários por privacidade.</div>`;
+  });
+}
+
+function generateULA() {
+  render('ula-result', () => {
+    const r = C.generateULA();
+    return `<div class="summary">${kvIPv6('Prefixo ULA /48',r.prefixValue,{ prefix: 48 })}${kv('Global ID de 40 bits',r.globalId.toString(16).padStart(10,'0'))}${kvIPv6('Exemplo de primeira LAN',r.prefixValue,{ prefix: 64 })}</div>`;
+  });
+}
+
+function exportCSV() {
+  if (!lastTable) return;
+  const quote = (v) => '"'+String(v).replace(/"/g,'""')+'"';
+  const csv = '\uFEFF'+[lastTable.headers,...lastTable.rows].map(row => row.map(quote).join(';')).join('\r\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=lastTable.filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+
+const PUBLIC_IP_CACHE_KEY = 'ipcalc-public-ips-v2';
+const FALLBACK_IPV4 = '0.0.0.0/0';
+const IPINFO_ENDPOINTS = {
+  4: ['https://v4.ipinfo.io/json', 'https://ipinfo.io/json'],
+  6: ['https://v6.ipinfo.io/json', 'https://ipinfo.io/json']
+};
+const IP_DETAILS_PROVIDERS = [
+  { name: 'ipconfig.io', url: ip => `https://ipconfig.io/json?ip=${encodeURIComponent(ip)}` },
+  { name: 'IPinfo', url: ip => `https://ipinfo.io/${encodeURIComponent(ip)}/json` }
+];
+let fallbackIPv6 = '';
+let activeIpDetails = null;
+let detailsScrollY = 0;
+let detailsRequestId = 0;
+
+function random64() {
+  const bytes = new Uint8Array(8);
+  if (window.crypto?.getRandomValues) window.crypto.getRandomValues(bytes);
+  else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  let value = 0n;
+  for (const byte of bytes) value = (value << 8n) | BigInt(byte);
+  return value || 1n;
+}
+
+function getFallbackIPv6() {
+  if (!fallbackIPv6) {
+    const ula = C.generateULA();
+    fallbackIPv6 = `${C.compressedIPv6(ula.prefixValue | random64())}/64`;
+  }
+  return fallbackIPv6;
+}
+
+function applyPublicIpToCalculator(version, address = '') {
+  if (version === 4) {
+    $('ipv4-input').value = address ? `${address}/32` : FALLBACK_IPV4;
+    calculateIPv4();
+    return;
+  }
+  $('ipv6-input').value = address ? `${address}/128` : getFallbackIPv6();
+  calculateIPv6();
+}
+
+function publicIpFamily(value) {
+  try { C.parseIPv4(value); return 4; } catch {}
+  try { C.parseIPv6(value); return 6; } catch {}
+  return 0;
+}
+
+async function fetchWithTimeout(url, { timeoutMs = 7000, json = false } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      method: 'GET', mode: 'cors', cache: 'no-store', credentials: 'omit',
+      referrerPolicy: 'no-referrer', headers: { Accept: 'application/json, text/plain;q=0.9' }, signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`O serviço respondeu HTTP ${response.status}.`);
+    if (json) return await response.json();
+    return await response.text();
+  } finally { clearTimeout(timer); }
+}
+
+async function fetchIpinfoAddress(url) {
+  const text = String(await fetchWithTimeout(url)).trim();
+  let address = text;
+  try {
+    const payload = JSON.parse(text);
+    address = payload.ip || payload.address || '';
+  } catch {}
+  address = String(address).trim();
+  if (!address) throw new Error('Resposta do IPinfo sem endereço IP.');
+  return address;
+}
+
+async function detectIpVersion(version) {
+  let lastError = null;
+  for (const endpoint of IPINFO_ENDPOINTS[version]) {
+    try {
+      const address = await fetchIpinfoAddress(endpoint);
+      if (publicIpFamily(address) === version) return { address, endpoint };
+      lastError = new Error(`O endpoint retornou IPv${publicIpFamily(address) || ' desconhecido'}.`);
+    } catch (error) { lastError = error; }
+  }
+  throw lastError || new Error(`Não foi possível detectar IPv${version}.`);
+}
+
+function readPublicIpCache() {
+  try { return JSON.parse(safeStorage.get(PUBLIC_IP_CACHE_KEY) || '{}'); } catch { return {}; }
+}
+function writePublicIpCache(version, address) {
+  const cache = readPublicIpCache();
+  cache[`ipv${version}`] = { address, detectedAt: new Date().toISOString() };
+  safeStorage.set(PUBLIC_IP_CACHE_KEY, JSON.stringify(cache));
+}
+function formatDetectedTime(date = new Date()) {
+  return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(date);
+}
+function setPublicIpState(version, state, address, detail) {
+  const value = $(`public-ipv${version}`);
+  const status = $(`public-ipv${version}-status`);
+  const description = $(`public-ipv${version}-detail`);
+  const copyButton = $(`public-ipv${version}-copy`);
+  const infoButton = $(`public-ipv${version}-info`);
+  if (!value || !status || !description) return;
+  const labels = { loading: 'Consultando', ok: 'Detectado', unavailable: 'Indisponível', noipv6: 'Sem IPv6', error: 'Falha' };
+  status.className = `ip-status ${state}`;
+  status.textContent = labels[state] || state;
+  value.textContent = address || (state === 'noipv6' ? 'Não possui IPv6' : version === 6 ? 'IPv6 indisponível' : 'IPv4 não detectado');
+  description.textContent = detail || '';
+  if (copyButton) {
+    copyButton.dataset.copy = address || '';
+    copyButton.disabled = !address;
+  }
+  if (infoButton) {
+    const verified = state === 'ok' && Boolean(address);
+    infoButton.dataset.ip = verified ? address : '';
+    infoButton.disabled = !verified;
+    infoButton.title = verified ? `Ver informações de ${address}` : 'Disponível somente para um IP verificado nesta conexão';
+  }
+}
+
+async function detectPublicIps() {
+  const refresh = $('public-ip-refresh');
+  if (refresh) { refresh.disabled = true; refresh.classList.add('is-loading'); }
+
+  if (!navigator.onLine) {
+    const cache = readPublicIpCache();
+    for (const version of [4, 6]) {
+      const saved = cache[`ipv${version}`];
+      if (saved?.address) {
+        const when = saved.detectedAt ? new Date(saved.detectedAt).toLocaleString('pt-BR') : 'anteriormente';
+        setPublicIpState(version, 'unavailable', saved.address, `Sem internet. Último valor detectado em ${when}.`);
+      } else setPublicIpState(version, 'unavailable', '', 'Sem internet para consultar o IPinfo.');
+      applyPublicIpToCalculator(version, '');
+    }
+    if (refresh) { refresh.disabled = false; refresh.classList.remove('is-loading'); }
+    return;
+  }
+
+  setPublicIpState(4, 'loading', 'Consultando…', 'Detectando o endereço público via IPinfo.');
+  setPublicIpState(6, 'loading', 'Consultando…', 'Verificando se esta conexão possui IPv6 público.');
+
+  const results = await Promise.allSettled([detectIpVersion(4), detectIpVersion(6)]);
+  results.forEach((result, index) => {
+    const version = index === 0 ? 4 : 6;
+    if (result.status === 'fulfilled') {
+      writePublicIpCache(version, result.value.address);
+      setPublicIpState(version, 'ok', result.value.address, `Detectado via IPinfo às ${formatDetectedTime()}.`);
+      applyPublicIpToCalculator(version, result.value.address);
+    } else if (version === 6) {
+      setPublicIpState(6, 'noipv6', '', 'Esta conexão não apresentou um endereço IPv6 público.');
+      applyPublicIpToCalculator(6, '');
+    } else {
+      setPublicIpState(4, 'error', '', 'Não foi possível consultar o IPv4 no IPinfo. Tente atualizar.');
+      applyPublicIpToCalculator(4, '');
+    }
+  });
+
+  if (refresh) { refresh.disabled = false; refresh.classList.remove('is-loading'); }
+}
+
+async function fetchIpDetails(address) {
+  let lastError = null;
+  for (const provider of IP_DETAILS_PROVIDERS) {
+    try {
+      const payload = await fetchWithTimeout(provider.url(address), { timeoutMs: 8500, json: true });
+      if (!payload || typeof payload !== 'object' || payload.error) throw new Error(payload?.error?.message || payload?.error || 'Resposta inválida.');
+      return { provider: provider.name, payload };
+    } catch (error) { lastError = error; }
+  }
+  throw lastError || new Error('Nenhum serviço retornou informações para este endereço.');
+}
+
+function normalizeIpDetails(address, provider, payload) {
+  const location = String(payload.loc || '').split(',');
+  const latitude = payload.latitude ?? (location.length === 2 ? Number(location[0]) : null);
+  const longitude = payload.longitude ?? (location.length === 2 ? Number(location[1]) : null);
+  let asn = payload.asn || '';
+  let organization = payload.asn_org || payload.as_name || payload.organization || payload.org || '';
+  if (!asn && /^AS\d+\b/i.test(organization)) {
+    const match = organization.match(/^(AS\d+)\s*(.*)$/i);
+    asn = match?.[1] || '';
+    organization = match?.[2] || organization;
+  } else if (asn && organization.startsWith(`${asn} `)) organization = organization.slice(asn.length + 1);
+  return {
+    address: payload.ip || address,
+    version: publicIpFamily(payload.ip || address),
+    decimal: payload.ip_decimal,
+    hostname: payload.hostname || payload.reverse || '',
+    network: payload.network || payload.prefix || '',
+    asn,
+    organization,
+    country: payload.country_name || payload.country || '',
+    countryCode: payload.country_iso || payload.country_code || (provider === 'IPinfo' ? payload.country : ''),
+    inEU: payload.country_eu,
+    region: payload.region_name || payload.region || '',
+    regionCode: payload.region_code || '',
+    city: payload.city || '',
+    postal: payload.zip_code || payload.postal || '',
+    timezone: payload.time_zone || payload.timezone || '',
+    metro: payload.metro_code || '',
+    latitude: Number.isFinite(Number(latitude)) ? Number(latitude) : null,
+    longitude: Number.isFinite(Number(longitude)) ? Number(longitude) : null,
+    anycast: payload.anycast,
+    bogon: payload.bogon,
+    provider,
+    payload
+  };
+}
+
+function boolText(value) { return value === true ? 'Sim' : value === false ? 'Não' : ''; }
+function detailRow(label, value, { copy = true, html = false } = {}) {
+  if (value === undefined || value === null || value === '') return '';
+  const rendered = html ? value : (copy ? copyable(String(value), `Copiar ${label}`) : escapeHTML(String(value)));
+  return `<div class="ip-detail-row"><div class="ip-detail-name">${escapeHTML(label)}</div><div class="ip-detail-data">${rendered}</div></div>`;
+}
+function detailsGroup(title, rows, full = false) {
+  const content = rows.filter(Boolean).join('');
+  if (!content) return '';
+  return `<section class="ip-details-group${full ? ' full' : ''}"><h3>${escapeHTML(title)}</h3><div class="ip-details-list">${content}</div></section>`;
+}
+function renderIpDetails(details) {
+  const coords = details.latitude !== null && details.longitude !== null ? `${details.latitude}, ${details.longitude}` : '';
+  const mapUrl = coords ? `https://www.openstreetmap.org/?mlat=${encodeURIComponent(details.latitude)}&mlon=${encodeURIComponent(details.longitude)}#map=10/${encodeURIComponent(details.latitude)}/${encodeURIComponent(details.longitude)}` : '';
+  const sourceUrl = details.provider === 'ipconfig.io'
+    ? `https://ipconfig.io/?ip=${encodeURIComponent(details.address)}`
+    : `https://ipinfo.io/${encodeURIComponent(details.address)}`;
+  const addressRows = [
+    detailRow('Endereço IP', details.address),
+    detailRow('Versão', `IPv${details.version}`, { copy: false }),
+    detailRow('Inteiro decimal', details.decimal),
+    detailRow('Hostname / PTR', details.hostname),
+    detailRow('Rede / prefixo', details.network),
+    detailRow('Anycast', boolText(details.anycast), { copy: false }),
+    detailRow('Bogon / reservado', boolText(details.bogon), { copy: false })
+  ];
+  const networkRows = [
+    detailRow('ASN', details.asn),
+    detailRow('Organização / provedor', details.organization)
+  ];
+  const locationRows = [
+    detailRow('País', details.country),
+    detailRow('Código do país', details.countryCode),
+    detailRow('Pertence à União Europeia', boolText(details.inEU), { copy: false }),
+    detailRow('Estado / região', details.region),
+    detailRow('Código da região', details.regionCode),
+    detailRow('Cidade', details.city),
+    detailRow('CEP / código postal', details.postal),
+    detailRow('Fuso horário', details.timezone),
+    detailRow('Código metropolitano', details.metro),
+    coords ? detailRow('Coordenadas', `${copyable(coords, 'Copiar coordenadas')} <a class="ip-detail-link" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer">Abrir no mapa</a>`, { html: true }) : ''
+  ];
+  return `<div class="ip-details-groups">
+    ${detailsGroup('Endereço', addressRows)}
+    ${detailsGroup('Rede e provedor', networkRows)}
+    ${detailsGroup('Localização aproximada', locationRows, true)}
+  </div>
+  <div class="ip-details-source"><span>Fonte utilizada: <strong>${escapeHTML(details.provider)}</strong></span><a href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">Abrir consulta no serviço</a><span>A localização por IP é aproximada.</span></div>
+  <details class="ip-raw-details"><summary>Ver resposta JSON completa</summary><pre>${escapeHTML(JSON.stringify(details.payload, null, 2))}</pre></details>`;
+}
+
+function setCalculatorPageVisible(visible) {
+  const elements = [document.querySelector('.public-ip-panel'), document.querySelector('.tabs'), document.querySelector('main'), document.querySelector('footer')];
+  elements.forEach(element => { if (element) element.hidden = !visible; });
+}
+async function loadActiveIpDetails() {
+  if (!activeIpDetails) return;
+  const requestId = ++detailsRequestId;
+  const refresh = $('ip-details-refresh');
+  if (refresh) { refresh.disabled = true; refresh.classList.add('is-loading'); }
+  $('ip-details-title').textContent = activeIpDetails.address;
+  $('ip-details-subtitle').textContent = `Consultando informações do IPv${activeIpDetails.version} público…`;
+  $('ip-details-result').innerHTML = '<div class="notice">Consultando ipconfig.io e, se necessário, IPinfo…</div>';
+  try {
+    const response = await fetchIpDetails(activeIpDetails.address);
+    if (requestId !== detailsRequestId) return;
+    const details = normalizeIpDetails(activeIpDetails.address, response.provider, response.payload);
+    $('ip-details-subtitle').textContent = `Informações do IPv${activeIpDetails.version} público, fornecidas por ${response.provider}.`;
+    $('ip-details-result').innerHTML = renderIpDetails(details);
+  } catch (error) {
+    if (requestId !== detailsRequestId) return;
+    $('ip-details-subtitle').textContent = 'Não foi possível obter os detalhes deste endereço.';
+    $('ip-details-result').innerHTML = `<div class="alert"><strong>Falha na consulta.</strong><br>${escapeHTML(error.message || error)}<br><br>Verifique a conexão e tente novamente.</div>`;
+  } finally {
+    if (requestId === detailsRequestId && refresh) { refresh.disabled = false; refresh.classList.remove('is-loading'); }
+  }
+}
+function openIpDetails(version, address) {
+  if (!address || publicIpFamily(address) !== version) return;
+  detailsScrollY = window.scrollY;
+  activeIpDetails = { version, address };
+  setCalculatorPageVisible(false);
+  $('ip-details-page').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  loadActiveIpDetails();
+}
+function closeIpDetails() {
+  detailsRequestId++;
+  activeIpDetails = null;
+  $('ip-details-page').hidden = true;
+  setCalculatorPageVisible(true);
+  window.scrollTo({ top: detailsScrollY, behavior: 'auto' });
+}
+
+async function writeClipboard(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  textarea.style.pointerEvents = 'none';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand('copy');
+  textarea.remove();
+  if (!copied) throw new Error('O navegador não permitiu copiar.');
+}
+
+function bind() {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn,.tab-panel').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active'); $(btn.dataset.tab).classList.add('active');
+  }));
+  $('theme-toggle').addEventListener('click',()=>{
+    const root=document.documentElement; const next=root.dataset.theme==='light'?'dark':'light'; root.dataset.theme=next; safeStorage.set('ipcalc-theme',next); $('theme-toggle').textContent=next==='light'?'🌙':'☀️';
+  });
+  const saved=safeStorage.get('ipcalc-theme'); if(saved){document.documentElement.dataset.theme=saved;$('theme-toggle').textContent=saved==='light'?'🌙':'☀️';}
+
+  $('ipv4-calc').onclick=calculateIPv4; $('ipv4-subnet-calc').onclick=calculateIPv4Subnets; $('host4-calc').onclick=calculateHostPlanner4;
+  $('ipv6-calc').onclick=calculateIPv6; $('ipv6-subnet-calc').onclick=calculateIPv6Subnets; $('host6-calc').onclick=calculateHostPlanner6;
+  $('vlsm-calc').onclick=calculateVLSM; $('compare-calc').onclick=calculateCompare; $('eui-calc').onclick=calculateEUI64; $('ula-generate').onclick=generateULA;
+  $('public-ip-refresh').onclick=detectPublicIps;
+  $('public-ipv4-info').onclick=()=>openIpDetails(4,$('public-ipv4-info').dataset.ip || '');
+  $('public-ipv6-info').onclick=()=>openIpDetails(6,$('public-ipv6-info').dataset.ip || '');
+  $('ip-details-back').onclick=closeIpDetails;
+  $('ip-details-refresh').onclick=loadActiveIpDetails;
+  window.addEventListener('online',detectPublicIps);
+  window.addEventListener('offline',detectPublicIps);
+
+  document.body.addEventListener('click', async (ev) => {
+    const copy = ev.target.closest('[data-copy]');
+    if (copy && copy.dataset.copy) {
+      try {
+        await writeClipboard(copy.dataset.copy);
+        const previousLabel = copy.getAttribute('aria-label') || 'Copiar valor';
+        copy.innerHTML = CHECK_ICON;
+        copy.classList.add('copied');
+        copy.setAttribute('aria-label', 'Copiado');
+        copy.setAttribute('title', 'Copiado');
+        window.setTimeout(() => {
+          copy.innerHTML = COPY_ICON;
+          copy.classList.remove('copied');
+          copy.setAttribute('aria-label', previousLabel);
+          copy.setAttribute('title', previousLabel);
+        }, 1100);
+      } catch {}
+    }
+    if(ev.target.closest('[data-export]')) exportCSV();
+  });
+  document.querySelectorAll('input, select, textarea').forEach(field => field.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' || ev.isComposing) return;
+    if (field.tagName === 'TEXTAREA' && ev.shiftKey) return;
+    const card = field.closest('.card');
+    const button = card?.querySelector('.actions button:not([data-export])');
+    if (!button || button.disabled) return;
+    ev.preventDefault();
+    button.click();
+  }));
+
+  $('ipv4-input').value = FALLBACK_IPV4;
+  $('ipv6-input').value = getFallbackIPv6();
+  renderIPv4Reference();
+  calculateIPv4(); calculateIPv6(); generateULA(); detectPublicIps();
+}
+document.addEventListener('DOMContentLoaded',bind);
+
+</script>
+</body>
+</html>

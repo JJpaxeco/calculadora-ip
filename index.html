@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Calculadora completa de IPv4, IPv6, subnetting, VLSM e conversões.">
+  <title>Calculadora IPv4 & IPv6</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="hero">
+    <h1>Calculadora IPv4 & IPv6</h1>
+    <button id="theme-toggle" class="icon-btn" type="button" aria-label="Alternar entre tema claro e escuro" title="Alternar tema">☀️</button>
+  </header>
+
+  <section class="public-ip-panel" aria-labelledby="public-ip-title">
+    <div class="public-ip-heading">
+      <div>
+        <span class="eyebrow">Conexão atual</span>
+        <h2 id="public-ip-title">Meus endereços públicos</h2>
+      </div>
+      <button id="public-ip-refresh" class="ip-refresh-button" type="button" aria-label="Atualizar endereços públicos">
+        <span aria-hidden="true">↻</span> Atualizar
+      </button>
+    </div>
+    <div class="public-ip-grid" aria-live="polite">
+      <article class="public-ip-card">
+        <div class="public-ip-meta">
+          <span class="ip-version">Meu IPv4</span>
+          <span id="public-ipv4-status" class="ip-status loading">Consultando</span>
+        </div>
+        <div class="public-ip-value-row">
+          <strong id="public-ipv4" class="ip-value">Consultando…</strong>
+          <div class="public-ip-actions">
+            <button id="public-ipv4-copy" class="copy-mini public-ip-copy" type="button" data-copy="" aria-label="Copiar Meu IPv4" title="Copiar Meu IPv4" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>
+            <button id="public-ipv4-info" class="ip-info-button" type="button" data-ip-version="4" disabled>Ver informações</button>
+          </div>
+        </div>
+        <span id="public-ipv4-detail" class="ip-detail">Detectando o endereço público via IPinfo.</span>
+      </article>
+      <article class="public-ip-card">
+        <div class="public-ip-meta">
+          <span class="ip-version">Meu IPv6</span>
+          <span id="public-ipv6-status" class="ip-status loading">Consultando</span>
+        </div>
+        <div class="public-ip-value-row">
+          <strong id="public-ipv6" class="ip-value">Consultando…</strong>
+          <div class="public-ip-actions">
+            <button id="public-ipv6-copy" class="copy-mini public-ip-copy" type="button" data-copy="" aria-label="Copiar Meu IPv6" title="Copiar Meu IPv6" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>
+            <button id="public-ipv6-info" class="ip-info-button" type="button" data-ip-version="6" disabled>Ver informações</button>
+          </div>
+        </div>
+        <span id="public-ipv6-detail" class="ip-detail">Será exibido somente quando houver conectividade IPv6.</span>
+      </article>
+    </div>
+    <p class="public-ip-note">A detecção usa o IPinfo. A página de informações consulta o ipconfig.io e usa o IPinfo como alternativa. Os cálculos de rede continuam locais.</p>
+  </section>
+
+  <nav class="tabs" aria-label="Módulos">
+    <button class="tab-btn active" data-tab="tab-ipv4" type="button">IPv4</button>
+    <button class="tab-btn" data-tab="tab-ipv6" type="button">IPv6</button>
+    <button class="tab-btn" data-tab="tab-vlsm" type="button">VLSM</button>
+    <button class="tab-btn" data-tab="tab-tools" type="button">Ferramentas</button>
+  </nav>
+
+  <main>
+    <section id="tab-ipv4" class="tab-panel active">
+      <div class="grid">
+        <article class="card full">
+          <h2>Calculadora CIDR IPv4</h2><p class="help">Aceita prefixo CIDR, máscara após a barra ou máscara separada por espaço.</p>
+          <div class="form-grid"><div class="field full"><label for="ipv4-input">Endereço ou bloco</label><input id="ipv4-input" value="0.0.0.0/0" placeholder="192.168.0.1/24 ou 192.168.0.1/255.255.255.0" inputmode="decimal" autocomplete="off"></div></div>
+          <div class="actions"><button id="ipv4-calc" class="btn primary" type="button">Calcular IPv4</button></div><div id="ipv4-result" class="result"></div>
+        </article>
+        <article class="card full">
+          <h2>Divisor de sub-redes IPv4</h2><p class="help">O bloco base é sincronizado automaticamente com a rede calculada acima. A listagem é limitada para evitar travamentos em divisões muito grandes.</p>
+          <div class="form-grid">
+            <div class="field"><label for="ipv4-subnet-base">Bloco base sincronizado</label><input id="ipv4-subnet-base" value="0.0.0.0/0" autocomplete="off"><span class="field-hint">Atualizado ao aplicar a Calculadora CIDR IPv4.</span></div>
+            <div class="field small"><label for="ipv4-subnet-prefix">Novo prefixo</label><input id="ipv4-subnet-prefix" type="number" min="0" max="32" value="8" inputmode="numeric"></div>
+            <div class="field small"><label for="ipv4-subnet-start">Índice inicial</label><input id="ipv4-subnet-start" type="number" min="0" value="0"></div>
+            <div class="field small"><label for="ipv4-subnet-limit">Listar</label><input id="ipv4-subnet-limit" type="number" min="1" max="1000" value="32"></div>
+          </div>
+          <div class="actions"><button id="ipv4-subnet-calc" class="btn primary" type="button">Dividir IPv4</button></div><div id="ipv4-subnet-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Prefixo por quantidade de hosts</h2><p class="help">Encontra o menor bloco IPv4 que atende à capacidade informada.</p>
+          <div class="form-grid"><div class="field full"><label for="host4-count">Hosts utilizáveis necessários</label><input id="host4-count" type="number" min="1" value="120"></div></div>
+          <label class="inline-check"><input id="host4-allow31" type="checkbox" checked> Permitir /31 para dois hosts ponto a ponto</label>
+          <div class="actions"><button id="host4-calc" class="btn primary" type="button">Sugerir prefixo</button></div><div id="host4-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Referência rápida IPv4</h2>
+          <div class="table-wrap reference-table"><table><thead><tr><th>Prefixo</th><th>Máscara</th><th>Total</th><th>Usáveis*</th></tr></thead><tbody id="ipv4-reference-body"></tbody></table></div><p class="help">*Modelo tradicional, exceto /31 conforme RFC 3021. A tabela cobre todos os prefixos, de /0 a /32.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-ipv6" class="tab-panel">
+      <div class="grid">
+        <article class="card full">
+          <h2>Calculadora CIDR IPv6</h2><p class="help">Normaliza conforme a representação canônica, expande hextetos e calcula a faixa completa de 128 bits.</p>
+          <div class="form-grid"><div class="field full"><label for="ipv6-input">Endereço ou bloco</label><input id="ipv6-input" value="fd00::1/64" placeholder="2001:db8:1234:10::25/64"></div></div>
+          <div class="actions"><button id="ipv6-calc" class="btn primary" type="button">Calcular IPv6</button></div><div id="ipv6-result" class="result"></div>
+        </article>
+        <article class="card full">
+          <h2>Divisor de sub-redes IPv6</h2><p class="help">Calcula quantidades gigantes com precisão e lista apenas a faixa solicitada.</p>
+          <div class="form-grid">
+            <div class="field"><label for="ipv6-subnet-base">Bloco base</label><input id="ipv6-subnet-base" value="2001:db8:5000::/48"></div>
+            <div class="field small"><label for="ipv6-subnet-prefix">Novo prefixo</label><input id="ipv6-subnet-prefix" type="number" min="0" max="128" value="56"></div>
+            <div class="field small"><label for="ipv6-subnet-start">Índice inicial</label><input id="ipv6-subnet-start" type="number" min="0" value="0"></div>
+            <div class="field small"><label for="ipv6-subnet-limit">Listar</label><input id="ipv6-subnet-limit" type="number" min="1" max="1000" value="32"></div>
+          </div>
+          <div class="actions"><button id="ipv6-subnet-calc" class="btn primary" type="button">Dividir IPv6</button></div><div id="ipv6-subnet-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Prefixo por capacidade matemática</h2><p class="help">Sugere o menor prefixo pela quantidade de endereços. Para LANs com SLAAC, use normalmente /64.</p>
+          <div class="form-grid"><div class="field full"><label for="host6-count">Endereços necessários</label><input id="host6-count" type="number" min="1" value="1000"></div></div>
+          <div class="actions"><button id="host6-calc" class="btn primary" type="button">Sugerir prefixo</button></div><div id="host6-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Referência rápida IPv6</h2>
+          <div class="table-wrap"><table><thead><tr><th>Bloco recebido</th><th>Redes /64</th></tr></thead><tbody><tr><td>/48</td><td>65.536</td></tr><tr><td>/52</td><td>4.096</td></tr><tr><td>/56</td><td>256</td></tr><tr><td>/60</td><td>16</td></tr><tr><td>/64</td><td>1</td></tr></tbody></table></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-vlsm" class="tab-panel">
+      <div class="grid">
+        <article class="card full">
+          <h2>Planejador VLSM IPv4</h2><p class="help">Ordena as necessidades da maior para a menor, alinha cada bloco e verifica se tudo cabe no prefixo base.</p>
+          <div class="form-grid">
+            <div class="field"><label for="vlsm-base">Bloco disponível</label><input id="vlsm-base" value="192.168.0.0/22"></div>
+            <div class="field"><label for="vlsm-lines">Redes e hosts utilizáveis</label><textarea id="vlsm-lines" aria-describedby="vlsm-enter-hint">Administrativo: 120
+Wi-Fi: 250
+CFTV: 60
+Telefonia: 30
+Ponto-a-ponto: 2</textarea><span id="vlsm-enter-hint" class="field-hint">Enter aplica o cálculo; Shift+Enter adiciona uma nova linha.</span></div>
+          </div>
+          <label class="inline-check"><input id="vlsm-allow31" type="checkbox" checked> Permitir /31 em demandas de dois hosts</label>
+          <div class="actions"><button id="vlsm-calc" class="btn secondary" type="button">Gerar plano VLSM</button></div><div id="vlsm-result" class="result"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-tools" class="tab-panel">
+      <div class="grid">
+        <article class="card">
+          <h2>Comparar redes</h2><p class="help">Verifica igualdade, contenção e sobreposição. Os dois blocos devem ser IPv4 ou ambos IPv6.</p>
+          <div class="form-grid"><div class="field full"><label for="compare-a">Bloco A</label><input id="compare-a" value="10.0.0.0/8"></div><div class="field full"><label for="compare-b">Bloco B</label><input id="compare-b" value="10.20.0.0/16"></div></div>
+          <div class="actions"><button id="compare-calc" class="btn primary" type="button">Comparar</button></div><div id="compare-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>MAC para EUI‑64</h2><p class="help">Insere FF:FE e inverte o bit U/L do primeiro byte.</p>
+          <div class="form-grid"><div class="field full"><label for="eui-prefix">Prefixo IPv6</label><input id="eui-prefix" value="2001:db8:1234:10::/64"></div><div class="field full"><label for="eui-mac">Endereço MAC</label><input id="eui-mac" value="00:1A:2B:3C:4D:5E"></div></div>
+          <div class="actions"><button id="eui-calc" class="btn primary" type="button">Gerar EUI‑64</button></div><div id="eui-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Gerador de ULA</h2><p class="help">Gera localmente um Global ID pseudoaleatório de 40 bits e entrega um prefixo fd00::/8 no formato /48.</p>
+          <div class="actions"><button id="ula-generate" class="btn secondary" type="button">Gerar novo ULA</button></div><div id="ula-result" class="result"></div>
+        </article>
+        <article class="card">
+          <h2>Notas operacionais</h2>
+          <ul><li>IPv6 não possui broadcast.</li><li>O cálculo usa inteiros exatos, sem arredondamento de 128 bits.</li><li>O divisor limita a visualização a 1.000 linhas por consulta.</li><li>/31 IPv4 e /127 IPv6 são apropriados em cenários ponto a ponto específicos.</li><li>Não use prefixos de documentação em produção.</li></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <section id="ip-details-page" class="ip-details-page" hidden aria-labelledby="ip-details-title">
+    <div class="ip-details-toolbar">
+      <button id="ip-details-back" class="btn ghost ip-details-back" type="button">← Voltar para a calculadora</button>
+      <button id="ip-details-refresh" class="ip-refresh-button" type="button"><span aria-hidden="true">↻</span> Atualizar informações</button>
+    </div>
+    <article class="card ip-details-card">
+      <span class="eyebrow">Consulta do endereço público</span>
+      <h2 id="ip-details-title">Informações do IP</h2>
+      <p id="ip-details-subtitle" class="help">Carregando informações…</p>
+      <div id="ip-details-result" class="result"></div>
+    </article>
+  </section>
+  <footer>Calculadora CIDR local. A detecção e as informações dos IPs públicos dependem de serviços externos.</footer>
+</div>
+<script src="ip-core.js"></script><script src="app.js"></script>
+<script>if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});</script>
+</body>
+</html>
