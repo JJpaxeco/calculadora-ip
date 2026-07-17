@@ -59,7 +59,6 @@ Depois abra `http://localhost:8080`.
 - Essas consultas enviam o endereço pesquisado aos respectivos serviços externos, como ocorre em qualquer consulta de geolocalização por IP.
 - Sem internet, a página informa que a consulta está indisponível; quando houver valor anterior salvo, ele é identificado claramente como último valor detectado.
 
-
 ## Ajustes de exibição v6
 
 - Resultados IPv6 mostram cada endereço em uma única linha.
