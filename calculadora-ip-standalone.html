@@ -315,6 +315,8 @@ textarea { min-height: 145px; resize: vertical; }
 .alert { border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, var(--panel)); }
 .notice { margin-top: 12px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, var(--panel)); }
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 11px; }
+.summary.ipv6-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.summary.ipv6-summary .kv-ipv6 { grid-column: span 2; }
 .kv { min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); }
 .kv .k { color: var(--muted); font-size: 11px; font-weight: 840; letter-spacing: .055em; text-transform: uppercase; }
 .kv .v { margin-top: 5px; overflow-wrap: anywhere; font-weight: 800; }
@@ -339,23 +341,45 @@ code, .mono { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospac
 .copy-mini:disabled { cursor: not-allowed; opacity: .4; transform: none; }
 .copy-mini.copied { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 50%, var(--line)); }
 .copy-mini svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.ipv6-dual { display: grid; gap: 9px; min-width: 0; }
-.ipv6-format-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; }
+.ipv6-dual { display: grid; gap: 10px; min-width: 0; }
+.ipv6-format-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: center; gap: 10px; min-width: 0; }
 .ipv6-format-label { color: var(--muted); font-size: 11px; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; }
-.table-wrap .ipv6-dual { min-width: 390px; }
+.ipv6-format-row .copyable { display: flex; width: 100%; min-width: 0; }
+.ipv6-format-row .copyable code {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y;
+  font-size: clamp(12px, .92vw, 14px);
+  line-height: 1.55;
+}
+.ipv6-format-row .copyable code::-webkit-scrollbar { height: 4px; }
+.ipv6-format-row .copyable code::-webkit-scrollbar-thumb { border-radius: 999px; background: color-mix(in srgb, var(--muted) 48%, transparent); }
+.table-wrap .ipv6-dual { min-width: 500px; }
 
 .table-wrap {
   width: 100%;
   margin-top: 15px;
-  overflow: auto;
-  overscroll-behavior: contain;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  touch-action: pan-x pan-y;
   border: 1px solid var(--line);
   border-radius: 15px;
   background: color-mix(in srgb, var(--panel-2) 72%, transparent);
   box-shadow: inset 0 1px rgba(255, 255, 255, .025);
   -webkit-overflow-scrolling: touch;
 }
-.reference-table { max-height: min(68vh, 700px); }
+.reference-table { max-height: none; }
 table { width: 100%; min-width: 760px; border-collapse: collapse; }
 .reference-table table { min-width: 540px; }
 th, td { padding: 11px 13px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: nowrap; }
@@ -430,7 +454,12 @@ footer { padding: 30px 12px max(14px, env(safe-area-inset-bottom)); color: var(-
 .ip-details-source a { color: var(--accent); font-weight: 800; }
 .ip-raw-details { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-2); }
 .ip-raw-details summary { padding: 11px 13px; cursor: pointer; color: var(--muted); font-weight: 800; }
-.ip-raw-details pre { max-height: 420px; margin: 0; padding: 0 13px 13px; overflow: auto; color: var(--text); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ip-raw-details pre { max-height: none; margin: 0; padding: 0 13px 13px; overflow-x: auto; overflow-y: visible; overscroll-behavior-y: auto; color: var(--text); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 1100px) {
+  .summary.ipv6-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary.ipv6-summary .kv-ipv6 { grid-column: 1 / -1; }
+}
 
 @media (max-width: 980px) {
   .card, .card.third { grid-column: 1 / -1; }
@@ -463,8 +492,12 @@ footer { padding: 30px 12px max(14px, env(safe-area-inset-bottom)); color: var(-
   input, textarea, select { font-size: 16px; }
   .actions .btn { flex: 1 1 100%; width: 100%; }
   .summary { grid-template-columns: 1fr; }
+  .summary.ipv6-summary { grid-template-columns: 1fr; }
+  .summary.ipv6-summary .kv-ipv6 { grid-column: auto; }
   .kv { padding: 12px; }
-  .ipv6-format-row { grid-template-columns: 68px minmax(0, 1fr); align-items: start; }
+  .ipv6-format-row { grid-template-columns: 1fr; align-items: start; gap: 4px; }
+  .ipv6-format-row .copyable { align-items: center; }
+  .ipv6-format-row .copyable code { font-size: clamp(10px, 2.8vw, 12px); }
   .copyable { align-items: flex-start; }
   .table-wrap { margin-right: -2px; }
   table { min-width: 690px; font-size: 13px; }
@@ -479,6 +512,7 @@ footer { padding: 30px 12px max(14px, env(safe-area-inset-bottom)); color: var(-
   .badge { padding: 5px 8px; font-size: 11px; }
   .card { padding: 14px; }
   .tab-btn { min-width: 96px; }
+  .ipv6-format-row .copyable code { font-size: clamp(9.5px, 2.75vw, 11px); letter-spacing: -.025em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1197,7 +1231,7 @@ function ipv6Dual(value, options = {}) {
     <div class="ipv6-format-row"><span class="ipv6-format-label">Completo</span>${copyable(forms.complete, 'Copiar IPv6 completo')}</div>
   </div>`;
 }
-function kvIPv6(key, value, options = {}) { return kv(key, ipv6Dual(value, options), true); }
+function kvIPv6(key, value, options = {}) { return `<div class="kv kv-ipv6"><div class="k">${escapeHTML(key)}</div><div class="v">${ipv6Dual(value, options)}</div></div>`; }
 function errorHTML(err) { return `<div class="alert"><strong>Não foi possível calcular.</strong><br>${escapeHTML(err.message || err)}</div>`; }
 function render(id, fn) { try { $(id).innerHTML = fn(); } catch (err) { $(id).innerHTML = errorHTML(err); } }
 function prefixCountText(total, exponent) { return `${fmt(total)} (2^${exponent})`; }
@@ -1285,7 +1319,7 @@ function calculateIPv6() {
     const r = C.parseCIDR6($('ipv6-input').value);
     const type = C.classifyIPv6(r.ip);
     const count64 = r.prefix <= 64 ? prefixCountText(C.pow2(64-r.prefix),64-r.prefix) : 'O bloco é mais específico que /64';
-    return `<div class="summary">
+    return `<div class="summary ipv6-summary">
       ${kvIPv6('Endereço informado', r.ip, { zone: r.zone })}
       ${kvIPv6('Prefixo de rede', r.network, { prefix: r.prefix })}
       ${kvIPv6('Primeiro endereço', r.first)}
@@ -1317,7 +1351,7 @@ function calculateIPv6Subnets() {
       })
     };
     const rows = r.items.map(x => `<tr><td>${fmt(x.index)}</td><td>${ipv6Dual(x.network, { prefix: r.newPrefix })}</td><td>${ipv6Dual(x.network)}</td><td>${ipv6Dual(x.last)}</td><td>${fmt(r.blockSize)}</td></tr>`).join('');
-    return `<div class="summary">${kvIPv6('Bloco base',r.base.network,{ prefix: r.base.prefix })}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',prefixCountText(r.blockSize,128-r.newPrefix))}</div>
+    return `<div class="summary ipv6-summary">${kvIPv6('Bloco base',r.base.network,{ prefix: r.base.prefix })}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',prefixCountText(r.blockSize,128-r.newPrefix))}</div>
     <div class="actions"><button class="btn ghost" type="button" data-export>Exportar tabela CSV</button></div>
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Rede</th><th>Primeiro</th><th>Último</th><th>Endereços</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   });
@@ -1355,14 +1389,14 @@ function calculateCompare() {
 function calculateEUI64() {
   render('eui-result', () => {
     const r = C.addressFromEUI64($('eui-prefix').value,$('eui-mac').value);
-    return `<div class="summary">${kv('Interface ID EUI-64',r.text)}${kvIPv6('Endereço no prefixo',r.address)}${kvIPv6('Link-local derivado',r.linkLocal)}</div><div class="notice">EUI-64 é útil para estudo e interoperabilidade. Sistemas modernos frequentemente usam identificadores estáveis ou temporários por privacidade.</div>`;
+    return `<div class="summary ipv6-summary">${kv('Interface ID EUI-64',r.text)}${kvIPv6('Endereço no prefixo',r.address)}${kvIPv6('Link-local derivado',r.linkLocal)}</div><div class="notice">EUI-64 é útil para estudo e interoperabilidade. Sistemas modernos frequentemente usam identificadores estáveis ou temporários por privacidade.</div>`;
   });
 }
 
 function generateULA() {
   render('ula-result', () => {
     const r = C.generateULA();
-    return `<div class="summary">${kvIPv6('Prefixo ULA /48',r.prefixValue,{ prefix: 48 })}${kv('Global ID de 40 bits',r.globalId.toString(16).padStart(10,'0'))}${kvIPv6('Exemplo de primeira LAN',r.prefixValue,{ prefix: 64 })}</div>`;
+    return `<div class="summary ipv6-summary">${kvIPv6('Prefixo ULA /48',r.prefixValue,{ prefix: 48 })}${kv('Global ID de 40 bits',r.globalId.toString(16).padStart(10,'0'))}${kvIPv6('Exemplo de primeira LAN',r.prefixValue,{ prefix: 64 })}</div>`;
   });
 }
 

@@ -1,1 +1,27 @@
-{"name":"Calculadora IPv4 e IPv6","short_name":"IP Calc","start_url":"./index.html","display":"standalone","background_color":"#07111f","theme_color":"#07111f","lang":"pt-BR","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "id": "/",
+  "name": "Calculadora IPv4 & IPv6",
+  "short_name": "Calculadora IPv4 & IPv6",
+  "description": "Calculadora completa de IPv4, IPv6, CIDR, sub-redes, VLSM, DNS reverso, EUI-64 e ULA.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "categories": [
+    "utilities",
+    "productivity",
+    "developer"
+  ],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -58,3 +58,11 @@ Depois abra `http://localhost:8080`.
 - A página **Ver informações** consulta primeiro `ipconfig.io/json?ip=...`, que não exige chave, e usa o IPinfo como alternativa.
 - Essas consultas enviam o endereço pesquisado aos respectivos serviços externos, como ocorre em qualquer consulta de geolocalização por IP.
 - Sem internet, a página informa que a consulta está indisponível; quando houver valor anterior salvo, ele é identificado claramente como último valor detectado.
+
+
+## Ajustes de exibição v6
+
+- Resultados IPv6 mostram cada endereço em uma única linha.
+- Em telas estreitas, endereços muito longos podem ser deslocados horizontalmente sem bloquear a rolagem vertical da página.
+- Tabelas não possuem mais rolagem vertical interna; a página controla a rolagem vertical.
+- O cache da PWA foi atualizado para `ipcalc-v6`.

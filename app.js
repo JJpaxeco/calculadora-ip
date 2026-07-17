@@ -33,7 +33,7 @@ function ipv6Dual(value, options = {}) {
     <div class="ipv6-format-row"><span class="ipv6-format-label">Completo</span>${copyable(forms.complete, 'Copiar IPv6 completo')}</div>
   </div>`;
 }
-function kvIPv6(key, value, options = {}) { return kv(key, ipv6Dual(value, options), true); }
+function kvIPv6(key, value, options = {}) { return `<div class="kv kv-ipv6"><div class="k">${escapeHTML(key)}</div><div class="v">${ipv6Dual(value, options)}</div></div>`; }
 function errorHTML(err) { return `<div class="alert"><strong>Não foi possível calcular.</strong><br>${escapeHTML(err.message || err)}</div>`; }
 function render(id, fn) { try { $(id).innerHTML = fn(); } catch (err) { $(id).innerHTML = errorHTML(err); } }
 function prefixCountText(total, exponent) { return `${fmt(total)} (2^${exponent})`; }
@@ -121,7 +121,7 @@ function calculateIPv6() {
     const r = C.parseCIDR6($('ipv6-input').value);
     const type = C.classifyIPv6(r.ip);
     const count64 = r.prefix <= 64 ? prefixCountText(C.pow2(64-r.prefix),64-r.prefix) : 'O bloco é mais específico que /64';
-    return `<div class="summary">
+    return `<div class="summary ipv6-summary">
       ${kvIPv6('Endereço informado', r.ip, { zone: r.zone })}
       ${kvIPv6('Prefixo de rede', r.network, { prefix: r.prefix })}
       ${kvIPv6('Primeiro endereço', r.first)}
@@ -153,7 +153,7 @@ function calculateIPv6Subnets() {
       })
     };
     const rows = r.items.map(x => `<tr><td>${fmt(x.index)}</td><td>${ipv6Dual(x.network, { prefix: r.newPrefix })}</td><td>${ipv6Dual(x.network)}</td><td>${ipv6Dual(x.last)}</td><td>${fmt(r.blockSize)}</td></tr>`).join('');
-    return `<div class="summary">${kvIPv6('Bloco base',r.base.network,{ prefix: r.base.prefix })}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',prefixCountText(r.blockSize,128-r.newPrefix))}</div>
+    return `<div class="summary ipv6-summary">${kvIPv6('Bloco base',r.base.network,{ prefix: r.base.prefix })}${kv('Novo prefixo','/'+r.newPrefix)}${kv('Quantidade de sub-redes',prefixCountText(r.count,r.newPrefix-r.base.prefix))}${kv('Endereços por sub-rede',prefixCountText(r.blockSize,128-r.newPrefix))}</div>
     <div class="actions"><button class="btn ghost" type="button" data-export>Exportar tabela CSV</button></div>
     <div class="table-wrap"><table><thead><tr><th>#</th><th>Rede</th><th>Primeiro</th><th>Último</th><th>Endereços</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   });
@@ -191,14 +191,14 @@ function calculateCompare() {
 function calculateEUI64() {
   render('eui-result', () => {
     const r = C.addressFromEUI64($('eui-prefix').value,$('eui-mac').value);
-    return `<div class="summary">${kv('Interface ID EUI-64',r.text)}${kvIPv6('Endereço no prefixo',r.address)}${kvIPv6('Link-local derivado',r.linkLocal)}</div><div class="notice">EUI-64 é útil para estudo e interoperabilidade. Sistemas modernos frequentemente usam identificadores estáveis ou temporários por privacidade.</div>`;
+    return `<div class="summary ipv6-summary">${kv('Interface ID EUI-64',r.text)}${kvIPv6('Endereço no prefixo',r.address)}${kvIPv6('Link-local derivado',r.linkLocal)}</div><div class="notice">EUI-64 é útil para estudo e interoperabilidade. Sistemas modernos frequentemente usam identificadores estáveis ou temporários por privacidade.</div>`;
   });
 }
 
 function generateULA() {
   render('ula-result', () => {
     const r = C.generateULA();
-    return `<div class="summary">${kvIPv6('Prefixo ULA /48',r.prefixValue,{ prefix: 48 })}${kv('Global ID de 40 bits',r.globalId.toString(16).padStart(10,'0'))}${kvIPv6('Exemplo de primeira LAN',r.prefixValue,{ prefix: 64 })}</div>`;
+    return `<div class="summary ipv6-summary">${kvIPv6('Prefixo ULA /48',r.prefixValue,{ prefix: 48 })}${kv('Global ID de 40 bits',r.globalId.toString(16).padStart(10,'0'))}${kvIPv6('Exemplo de primeira LAN',r.prefixValue,{ prefix: 64 })}</div>`;
   });
 }
 
